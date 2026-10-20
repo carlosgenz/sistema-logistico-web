@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emisión de Notas</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        body {
+            background-color: #070c16;
+            color: #e2e8f0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1400px; /* Se amplió el ancho máximo para pantallas grandes */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Encabezado */
+        .header-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 5px;
+        }
+        .header-area h1 { font-size: 26px; font-weight: 700; color: #ffffff; }
+        .header-area p { color: #64748b; font-size: 14px; margin-top: 4px; }
+        
+        .btn-volver {
+            background-color: #1e293b;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .btn-volver:hover { color: #ffffff; background-color: #334155; }
+
+        /* Filas de Control */
+        .row-dos-columnas {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel-control {
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .panel-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: #64748b;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* Inputs y Selects */
+        .input-dark {
+            background-color: #070c16;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 14px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            width: 100%;
+        }
+        .input-dark:focus { border-color: #38bdf8; }
+
+        /* Estilo especial para el input de calendario nativo */
+        input[type="date"].input-dark {
+            color-scheme: dark; /* Hace que el calendario flotante sea oscuro nativo */
+            cursor: pointer;
+        }
+
+        select.input-dark option {
+            background-color: #0f172a;
+            color: #ffffff;
+        }
+
+        /* Reloj en Vivo */
+        .reloj-display {
+            font-size: 32px;
+            font-weight: 700;
+            color: #10b981;
+            font-family: monospace;
+            margin-top: 3px;
+        }
+
+        /* Fila de Departamento y Urgencia */
+        .row-dpto-urgente {
+            display: flex;
+            gap: 20px;
+            align-items: flex-end;
+        }
+        .flex-principal { flex: 1; }
+
+        /* Botón Marcar Urgente */
+        .btn-urgente {
+            background-color: #0f172a;
+            border: 1px solid #334155;
+            color: #eab308;
+            padding: 12px 28px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+            height: 50px;
+            text-transform: uppercase;
+        }
+        .btn-urgente.activo {
+            background-color: rgba(234, 179, 8, 0.1);
+            border-color: #eab308;
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+        }
+
+        /* Textarea Mosaico Ampliado */
+        .textarea-mosaico {
+            background-color: #070c16;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            padding: 18px;
+            color: #ffffff;
+            font-size: 15px;
+            outline: none;
+            width: 100%;
+            height: 350px; /* Se duplicó la altura para mayor espacio */
+            resize: vertical; /* Permite estirarlo aún más manualmente */
+        }
+        .textarea-mosaico:focus { border-color: #6366f1; }
+
+        /* Botón Procesar Morado */
+        .btn-procesar {
+            background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            color: #ffffff;
+            border: none;
+            padding: 18px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+        .btn-procesar:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-procesar:active { transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- ENCABEZADO -->
+        <div class="header-area">
+            <div>
+                <h1>Emisión de Notas</h1>
+                <p>Panel de carga y control de transferencias</p>
+            </div>
+            <button class="btn-volver" onclick="window.parent.volverAlMenuInicioTarjetas()">← Volver al Panel</button>
+        </div>
+
+        <!-- FILA 1: FECHA AJUSTABLE Y HORA -->
+        <div class="row-dos-columnas">
+            <div class="panel-control">
+                <span class="panel-label">Fecha de Registro (Modificable)</span>
+                <input type="date" class="input-dark" id="fechaRegistro">
+            </div>
+            <div class="panel-control">
+                <span class="panel-label">Hora en Vivo</span>
+                <div class="reloj-display" id="relojVivo">00:00:00</div>
+            </div>
+        </div>
+        <!-- FILA 2: DEPARTAMENTO Y URGENCIA -->
+        <div class="panel-control">
+            <div class="row-dpto-urgente">
+                <div class="flex-principal">
+                    <span class="panel-label" style="display:block; margin-bottom:10px;">Departamento (DPTO)</span>
+                    <select class="input-dark" id="departamentoSelect">
+                        <option value="">Seleccione un departamento...</option>
+                        <option value="2">2</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="27">27</option>
+                        <option value="35">35</option>
+                        <option value="40">40</option>
+                        <option value="58">58</option>
+                    </select>
+                </div>
+                <button class="btn-urgente" id="btnUrgente" onclick="toggleUrgencia()">
+                    ⚠ Marcar Urgente
+                </button>
+            </div>
+        </div>
+
+        <!-- FILA 3: PEGADO MOSAICO AMPLIADO -->
+        <div class="panel-control">
+            <span class="panel-label" style="margin-bottom: 10px;">Pegado Mosaico / Detalle de Carga</span>
+            <textarea class="textarea-mosaico" id="mosaicoTextArea" placeholder="Pega aquí las notas, códigos o listados..."></textarea>
+            <button class="btn-procesar" onclick="procesarNotasMosaico()">Procesar Notas</button>
+        </div>
+
+    </div>
+
+    <script>
+        const API_URL = '../api/tasks';
+        let esUrgente = false;
+
+        // Configurar la fecha actual por defecto en el calendario dinámico (Año 2026)
+        const fecha = new Date();
+        const dia = String(fecha.getDate()).padStart(2, '0');
+        const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+        const anio = fecha.getFullYear();
+        // El formato requerido por el input date es YYYY-MM-DD
+        document.getElementById('fechaRegistro').value = `${anio}-${mes}-${dia}`;
+
+        // Control del Reloj Digital en Vivo
+        setInterval(() => {
+            const ahora = new Date();
+            const horas = String(ahora.getHours()).padStart(2, '0');
+            const minutos = String(ahora.getMinutes()).padStart(2, '0');
+            const segundos = String(ahora.getSeconds()).padStart(2, '0');
+            document.getElementById('relojVivo').innerText = `${horas}:${minutos}:${segundos}`;
+        }, 1000);
+
+        // Control Visual del Estado Urgente
+        function toggleUrgencia() {
+            esUrgente = !esUrgente;
+            const btn = document.getElementById('btnUrgente');
+            if (esUrgente) {
+                btn.classList.add('activo');
+            } else {
+                btn.classList.remove('activo');
+            }
+        }
+
+        // Envío de Datos a la Nube (Vercel KV)
+        async function procesarNotasMosaico() {
+            const fechaSeleccionada = document.getElementById('fechaRegistro').value;
+            const dpto = document.getElementById('departamentoSelect').value;
+            const contenido = document.getElementById('mosaicoTextArea').value;
+
+            if (!fechaSeleccionada) {
+                alert('Por favor, seleccione una Fecha válida.');
+                return;
+            }
+            if (!dpto) {
+                alert('Por favor, seleccione un Departamento.');
+                return;
+            }
+            if (!contenido.trim()) {
+                alert('El campo de pegado mosaico está vacío.');
+                return;
+            }
+
+            // Convertir formato de fecha YYYY-MM-DD a DD/MM/YYYY para que se guarde de forma legible
+            const partesFecha = fechaSeleccionada.split('-');
+            const fechaLegible = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
+
+            const prioridad = esUrgente ? '🚨 URGENTE' : '📦 NORMAL';
+            
+            // Empaquetamos todo con la fecha elegida para que viaje unido a la base de datos
+            const textoCompleto = `FECHA: ${fechaLegible} | DPTO: ${dpto} | Prioridad: ${prioridad} | Datos: ${contenido.trim()}`;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: textoCompleto })
+                });
+
+                if (res.ok) {
+                    alert('¡Notas procesadas y subidas a la nube exitosamente!');
+                    document.getElementById('mosaicoTextArea').value = '';
+                    if (esUrgente) toggleUrgencia(); // Resetea el botón de urgencia
+                } else {
+                    alert('Error en el servidor de la nube al intentar registrar.');
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Error crítico de conexión con la base de datos de Vercel KV.');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Logístico</title>
+    <style>
+        /* BASE OSCURA DE RESPALDO PARA TODO EL SITIO */
+        html, body {
+            width: 100% !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background-color: #070c16 !important;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* PANTALLA DE BIENVENIDA: ÚNICO LUGAR DONDE EXISTIRÁ EL FONDO LOGÍSTICO ANIMADO */
+        .pantalla-presentacion {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 40 !important;
+            text-align: center;
+            background: linear-gradient(135deg, #070c16 0%, #111e36 45%, #162a54 75%, #070c16 100%) !important;
+            background-size: 400% 400% !important;
+            animation: movimientoLiquidoBienvenida 10s ease infinite !important;
+            perspective: 1200px;
+        }
+        @keyframes movimientoLiquidoBienvenida {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* CAPA INTERNA DE ANIMACIONES LOGÍSTICAS COMPLETA */
+        .contenedor-logistica-movimiento {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 1 !important;
+        }
+
+        /* GRÁFICOS VECTORIALES DE LOGÍSTICA EN AZUL CYAN BRILLANTE NATIVO */
+        .elemento-logistico-svg {
+            position: absolute !important;
+            width: 75px !important;
+            height: 75px !important;
+            fill: none !important;
+            stroke: #00d2ff !important;
+            stroke-width: 1.8 !important;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            opacity: 0.35 !important;
+            user-select: none;
+            animation: flotacionLogisticaSuave 6s ease-in-out infinite alternate !important;
+        }
+        @keyframes flotacionLogisticaSuave {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-30px) rotate(12deg); }
+        }
+
+        /* CUBOS LOGÍSTICOS EN 3D EXCLUSIVOS DEL PANEL DE BIENVENIDA */
+        .cubo-3d {
+            position: absolute !important;
+            width: 60px !important;
+            height: 60px !important;
+            transform-style: preserve-3d;
+            animation: rotacionInercia3d 14s linear infinite;
+        }
+        .cubo-3d div {
+            position: absolute !important;
+            width: 60px !important;
+            height: 60px !important;
+            background: rgba(0, 210, 255, 0.05) !important;
+            border: 2px solid #00d2ff !important;
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.3), inset 0 0 15px rgba(0, 210, 255, 0.2) !important;
+        }
+        .cara-frontal   { transform: rotateY(0deg) translateZ(30px); }
+        .cara-trasera   { transform: rotateY(180deg) translateZ(30px); }
+        .cara-derecha   { transform: rotateY(90deg) translateZ(30px); }
+        .cara-izquierda { transform: rotateY(-90deg) translateZ(30px); }
+        .cara-superior  { transform: rotateX(90deg) translateZ(30px); }
+        .cara-inferior  { transform: rotateX(-90deg) translateZ(30px); }
+
+        @keyframes rotacionInercia3d {
+            0% { transform: translate3d(0, 0, 0) rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+            50% { transform: translate3d(15px, -35px, 50px) rotateX(180deg) rotateY(180deg) rotateZ(90deg); }
+            100% { transform: translate3d(0, 0, 0) rotateX(360deg) rotateY(360deg) rotateZ(180deg); }
+        }
+
+        /* TEXTOS GRANDES EN PRIMER PLANO DENTRO DE LA BIENVENIDA */
+        .bloque-animado-entrada {
+            z-index: 5 !important;
+            animation: caidaSuaveCentro 1.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+        }
+        @keyframes caidaSuaveCentro {
+            0% { transform: translateY(-100vh); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .titulo-bienvenida-gigante { color: #ffffff; font-size: 54px; font-weight: 800; margin: 0; letter-spacing: 1px; text-shadow: 0 4px 15px rgba(0, 0, 0, 0.9); }
+        .subtitulo-bienvenida-grande { color: #94a3b8; font-size: 19px; margin: 12px 0 0 0; font-weight: 600; text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9); }
+
+        .btn-iniciar-sistema {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff; border: none; padding: 18px 50px; font-size: 19px; font-weight: bold; border-radius: 12px; cursor: pointer; text-transform: uppercase; margin-top: 35px; opacity: 0;
+            animation: aparicionBoton 0.6s ease 1.3s forwards;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.3s;
+            z-index: 6 !important;
+        }
+        .btn-iniciar-sistema:hover { transform: scale(1.06) translateY(-2px); box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6); }
+        @keyframes aparicionBoton { to { opacity: 1; } }
+
+        /* REJILLA DE TARJETAS MODULARES CON FONDO NEGRO LIMPIO */
+        .pantalla-tarjetas-inicio { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 10 !important; padding: 20px; box-sizing: border-box; overflow-y: auto; background: #070c16 !important; }
+        .grid-tarjetas { display: grid; grid-template-columns: repeat(3, 1fr); gap: 25px; max-width: 1100px; width: 100%; margin-top: 30px; }
+        .tarjeta-modulo { background-color: rgba(19, 28, 46, 0.95); border: 2px solid #1e293b; border-radius: 16px; padding: 30px 20px; text-align: center; cursor: pointer; transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.3s, box-shadow 0.3s; }
+        .tarjeta-modulo:hover { transform: translateY(-10px) scale(1.02); border-color: #3b82f6; box-shadow: 0 15px 30px rgba(59, 130, 246, 0.25); background-color: rgba(22, 34, 63, 0.98); }
+        .tarjeta-icono { font-size: 40px; margin-bottom: 15px; display: block; transition: transform 0.3s; }
+        .tarjeta-modulo:hover .tarjeta-icono { transform: scale(1.15) rotate(5deg); }
+        .tarjeta-titulo { font-size: 20px; font-weight: bold; color: #ffffff; margin: 0 0 10px 0; }
+        .tarjeta-desc { font-size: 13px; color: #94a3b8; line-height: 1.5; margin: 0; }
+
+        /* NAV LATERAL SIDEBAR OPERATIVO COMPACTO */
+        .sidebar { width: 250px; background-color: #131c2e; border-right: 1px solid #1e293b; display: none; flex-direction: column; transition: width 0.3s ease; z-index: 20 !important; }
+        .sidebar.colapsada { width: 65px; }
+        .sidebar-header { padding: 16px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #1e293b; height: 60px; box-sizing: border-box; }
+        .logo-texto { font-size: 16px; font-weight: bold; color: #ffffff; white-space: nowrap; cursor: pointer; }
+        .sidebar.colapsada .logo-texto { display: none; }
+        .btn-hamburguesa { background: none; border: none; color: #94a3b8; font-size: 20px; cursor: pointer; }
+        .btn-hamburguesa:hover { color: #ffffff; }
+        .sidebar-menu { list-style: none; padding: 10px 6px; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item { display: flex; align-items: center; padding: 12px; color: #94a3b8; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; white-space: nowrap; gap: 12px; }
+        .menu-item:hover, .menu-item.activo { background-color: #1e293b; color: #ffffff; }
+        .sidebar.colapsada .texto-opcion { display: none; }
+
+        /* SUBMENÚ ACORDEÓN TRIPLE CORPORATIVO */
+        .lista-submenu { list-style: none; padding: 4px 0 4px 20px; margin: 0; display: none; flex-direction: column; gap: 2px; background-color: #0d1527; border-radius: 6px; }
+        .sidebar.colapsada .lista-submenu { display: none !important; }
+        .submenu-item { display: block; padding: 8px 12px; color: #8a99ad; text-decoration: none; font-size: 13px; font-weight: 600; border-radius: 4px; cursor: pointer; }
+        .submenu-item:hover { color: #00d2ff; background-color: rgba(0, 210, 255, 0.05); }
+        .flecha { margin-left: auto; font-size: 10px; }
+
+        /* CONTENEDOR PRINCIPAL Y VISUALIZADOR */
+        .contenido-principal { flex: 1; background-color: #070c16; position: relative; z-index: 5 !important; display: flex; flex-direction: column; height: 100vh; }
+        .iframe-pantalla { width: 100%; height: 100%; border: none; background: #070c16; }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA 1: BIENVENIDA -->
+    <div class="pantalla-presentacion" id="pantallaBienvenida">
+        <div class="contenedor-logistica-movimiento">
+            <!-- SVGs Elementos Logísticos -->
+            <svg class="elemento-logistico-svg" style="top: 48%; left: 6%; animation-delay: 0.8s;" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+            <svg class="elemento-logistico-svg" style="top: 52%; right: 7%; animation-delay: 2.3s;" viewBox="0 0 24 24"><path d="M12 2.18L3 6.68v10.64l9 4.5 9-4.5V6.68l-9-4.5zm0 2.25l6.39 3.19-2.22 1.11-6.39-3.19 2.22-1.11zm-7 4.14l6 3v7.41l-6-3V8.57zm8 10.41v-7.41l6-3v7.41l-6 3z"/></svg>
+            <svg class="elemento-logistico-svg" style="bottom: 12%; left: 14%; animation-delay: 3s;" viewBox="0 0 24 24"><path d="M20 8h-3V4H4c-1.1 0-2 .9-2 2v11h2c0 1.66.84 3 2.5 3s2.5-1.34 2.5-3h4c0 1.66.84 3 2.5 3s2.5-1.34 2.5-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm11.5 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6.5H15V9.5h2.5l1.87 2.5z"/></svg>
+            <svg class="elemento-logistico-svg" style="bottom: 15%; right: 15%; animation-delay: 1.1s;" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>
+
+            <div class="cubo-3d" style="top: 22%; left: 22%; animation-duration: 14s;">
+                <div class="cara-frontal"></div><div class="cara-trasera"></div><div class="cara-derecha"></div><div class="cara-izquierda"></div><div class="cara-superior"></div><div class="cara-inferior"></div>
+            </div>
+            <div class="cubo-3d" style="top: 18%; right: 25%; animation-duration: 18s; animation-delay: -2s;">
+                <div class="cara-frontal"></div><div class="cara-trasera"></div><div class="cara-derecha"></div><div class="cara-izquierda"></div><div class="cara-superior"></div><div class="cara-inferior"></div>
+            </div>
+            <div class="cubo-3d" style="top: 45%; left: 48%; animation-duration: 20s; animation-delay: -4s; width: 45px; height: 45px;">
+                <div class="cara-frontal" style="width: 45px; height: 45px; transform: rotateY(0deg) translateZ(22.5px);"></div>
+                <div class="cara-trasera" style="width: 45px; height: 45px; transform: rotateY(180deg) translateZ(22.5px);"></div>
+                <div class="cara-derecha" style="width: 45px; height: 45px; transform: rotateY(90deg) translateZ(22.5px);"></div>
+                <div class="cara-izquierda" style="width: 45px; height: 45px; transform: rotateY(-90deg) translateZ(22.5px);"></div>
+                <div class="cara-superior" style="width: 45px; height: 45px; transform: rotateX(90deg) translateZ(22.5px);"></div>
+                <div class="cara-inferior" style="width: 45px; height: 45px; transform: rotateX(-90deg) translateZ(22.5px);"></div>
+            </div>
+            <div class="cubo-3d" style="bottom: 25%; left: 28%; animation-duration: 16s; animation-delay: -5s;">
+                <div class="cara-frontal"></div><div class="cara-trasera"></div><div class="cara-derecha"></div><div class="cara-izquierda"></div><div class="cara-superior"></div><div class="cara-inferior"></div>
+            </div>
+            <div class="cubo-3d" style="bottom: 20%; right: 28%; animation-duration: 12s; animation-delay: -1s;">
+                <div class="cara-frontal"></div><div class="cara-trasera"></div><div class="cara-derecha"></div><div class="cara-izquierda"></div><div class="cara-superior"></div><div class="cara-inferior"></div>
+            </div>
+        </div>
+        <div class="bloque-animado-entrada">
+            <h1 class="titulo-bienvenida-gigante">Sistema Logístico</h1>
+            <p class="subtitulo-bienvenida-grande">Panel Central de Monitoreo y Control Operativo de Almacén</p>
+        </div>
+        <button class="btn-iniciar-sistema" onclick="desvanecerBienvenidaEIniciar()">Iniciar Sistema</button>
+    </div>
+
+    <!-- PANTALLA 2: CUADRÍCULA DE TARJETAS MODULARES -->
+    <div class="pantalla-tarjetas-inicio" id="menuInicioTarjetas">
+        <h1 style="color: #ffffff; font-size: 32px; font-weight: 800; margin: 0;">Seleccione Módulo de Trabajo</h1>
+        <p style="color: #64748b; font-size: 15px; margin: 6px 0 0 0; font-weight: 500;">Control unificado en tiempo real para almacenes centralizados</p>
+        
+        <div class="grid-tarjetas">
+            <div class="tarjeta-modulo" onclick="entrarAlModulo('modulos/emision-notas.html', 'btnM1')">
+                <span class="tarjeta-icono">📝</span>
+                <h3 class="tarjeta-titulo">1. Emisión de Notas</h3>
+                <p class="tarjeta-desc">Registro, control de operadores y carga inicial de remisiones al sistema unificado.</p>
+            </div>
+            <div class="tarjeta-modulo" onclick="entrarAlModulo('modulos/separacion.html', 'btnM2')">
+                <span class="tarjeta-icono">🗂️</span>
+                <h3 class="tarjeta-titulo">2. Área Separation</h3>
+                <p class="tarjeta-desc">Control de armado de pedidos y marcas automáticas de separación de ítems.</p>
+            </div>
+            <div class="tarjeta-modulo" onclick="entrarAlModulo('modulos/salida-imei.html', 'btnM3')">
+                <span class="tarjeta-icono">🚚</span>
+                <h3 class="tarjeta-titulo">3. Área de Salida</h3>
+                <p class="tarjeta-desc">Verificación final de empaque e IMEI con filtrado de dpto nativo simple.</p>
+            </div>
+            <div class="tarjeta-modulo" onclick="entrarAlModulo('modulos/notas-entrega.html', 'btnM4')">
+                <span class="tarjeta-icono">🤝</span>
+                <h3 class="tarjeta-titulo">4. Área de Entrega</h3>
+                <p class="tarjeta-desc">Cierre de marcas, casillas en limpio de transportistas y volumen físico VOL.</p>
+            </div>
+            <div class="tarjeta-modulo" onclick="entrarAlModulo('modulos/notas-general.html', 'btnSubmenuNotas')">
+                <span class="tarjeta-icono">📊</span>
+                <h3 class="tarjeta-titulo">Notas Entregadas</h3>
+                <p class="tarjeta-desc">Historial completo y archivo de remisiones de mercaderías concluidas.</p>
+            </div>
+            <div class="tarjeta-modulo" onclick="entrarAlModulo('modulos/top-operarios.html', 'btnM5')">
+                <span class="tarjeta-icono">🏆</span>
+                <h3 class="tarjeta-titulo">Principales Operarios</h3>
+                <p class="tarjeta-desc">Métricas avanzadas de bultos armados y rendimiento general de personal.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- NAVEGACIÓN SIDEBAR LATERAL -->
+    <div class="sidebar" id="miSidebarLogistica">
+        <div class="sidebar-header">
+            <span class="logo-texto" onclick="volverAlMenuInicioTarjetas()">⚙️ LOGÍSTICA</span>
+            <button class="btn-hamburguesa" id="btnToggleMenu">☰</button>
+        </div>
+        <ul class="sidebar-menu">
+            <li>
+                <a id="btnM1" onclick="cargarPantallaIframe('modulos/emision-notas.html', this)" class="menu-item">
+                    <span class="icono">📝</span><span class="texto-opcion">1. Emisión de Notas</span>
+                </a>
+            </li>
+            <li>
+                <a id="btnM2" onclick="cargarPantallaIframe('modulos/separacion.html', this)" class="menu-item">
+                    <span class="icono">🗂️</span><span class="texto-opcion">2. Área de Separación</span>
+                </a>
+            </li>
+            <li>
+                <a id="btnM3" onclick="cargarPantallaIframe('modulos/salida-imei.html', this)" class="menu-item">
+                    <span class="icono">🚚</span><span class="texto-opcion">3. Área de Salida</span>
+                </a>
+            </li>
+            <li>
+                <a id="btnM4" onclick="cargarPantallaIframe('modulos/notas-entrega.html', this)" class="menu-item">
+                    <span class="icono">🤝</span><span class="texto-opcion">4. Área de Entrega</span>
+                </a>
+            </li>
+            <li>
+                <a onclick="toggleSubmenuAcordeon()" class="menu-item" id="btnSubmenuNotas">
+                    <span class="icono">📊</span><span class="texto-opcion">Notas Entregadas</span><span class="flecha" id="flechaSub">▼</span>
+                </a>
+                <ul class="lista-submenu" id="opcionesNotasEntregadas">
+                    <li><a onclick="cargarPantallaIframe('modulos/notas-general.html', this)" class="submenu-item">• General</a></li>
+                    <li><a onclick="cargarPantallaIframe('modulos/notas-jebai.html', this)" class="submenu-item">• Jebai</a></li>
+                    <li><a onclick="cargarPantallaIframe('modulos/notas-entregadas.html', this)" class="submenu-item">• Newzone</a></li>
+                </ul>
+            </li>
+            <li>
+                <a id="btnM5" onclick="cargarPantallaIframe('modulos/top-operarios.html', this)" class="menu-item">
+                    <span class="icono">🏆</span><span class="texto-opcion">Principales Operarios</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- CONTENEDOR DE CONTENIDO OPERATIVO DINÁMICO -->
+    <div class="contenido-principal" id="contenedorPrincipalDinamico" style="display: none;">
+        <iframe class="iframe-pantalla" id="pantallaCentralIframe" src="about:blank"></iframe>
+    </div>
+    <script>
+        // Transición: Desvanecer la pantalla de bienvenida e iniciar el menú
+        window.desvanecerBienvenidaEIniciar = function() {
+            document.getElementById('pantallaBienvenida').style.display = 'none';
+            document.getElementById('menuInicioTarjetas').style.display = 'flex';
+        };
+
+        // Evento: Acceder a un módulo desde la cuadrícula de las 6 tarjetas iniciales
+        window.entrarAlModulo = function(urlRuta, idBotonSidebar) {
+            document.getElementById('menuInicioTarjetas').style.display = 'none';
+            document.getElementById('miSidebarLogistica').style.display = 'flex';
+            document.getElementById('contenedorPrincipalDinamico').style.display = 'flex';
+            
+            const btnSidebar = document.getElementById(idBotonSidebar);
+            cargarPantallaIframe(urlRuta, btnSidebar);
+        };
+
+        // Evento: Regresar a la cuadrícula de tarjetas al hacer clic en el título de la cabecera
+        window.volverAlMenuInicioTarjetas = function() {
+            document.getElementById('pantallaCentralIframe').src = 'about:blank';
+            document.getElementById('miSidebarLogistica').style.display = 'none';
+            document.getElementById('contenedorPrincipalDinamico').style.display = 'none';
+            document.getElementById('menuInicioTarjetas').style.display = 'flex';
+        };
+
+        // Control: Colapsar u ocultar el menú lateral con el botón de hamburguesa ☰
+        document.getElementById('btnToggleMenu').onclick = function() {
+            const sidebar = document.getElementById('miSidebarLogistica');
+            sidebar.classList.toggle('colapsada');
+            if (sidebar.classList.contains('colapsada')) {
+                document.getElementById('opcionesNotasEntregadas').style.display = 'none';
+                document.getElementById('flechaSub').innerText = '▼';
+            }
+        };
+
+        // Control: Desplegar u ocultar el submenú de notas corporativo (Newzone, Jebai, General)
+        window.toggleSubmenuAcordeon = function() {
+            const sidebar = document.getElementById('miSidebarLogistica');
+            if (sidebar.classList.contains('colapsada')) sidebar.classList.remove('colapsada');
+
+            const submenu = document.getElementById('opcionesNotasEntregadas');
+            const flecha = document.getElementById('flechaSub');
+
+            if (submenu.style.display === 'flex') {
+                submenu.style.display = 'none';
+                flecha.innerText = '▼';
+            } else {
+                submenu.style.display = 'flex';
+                flecha.innerText = '▲';
+            }
+            
+            const opciones = document.querySelectorAll('.sidebar-menu .menu-item');
+            opciones.forEach(elemento => elemento.classList.remove('activo'));
+            document.getElementById('btnSubmenuNotas').classList.add('activo');
+        };
+
+        // Navegación: Transición fluida del Sidebar hacia el contenedor central Iframe
+        window.cargarPantallaIframe = function(urlRuta, elementoTocado) {
+            document.getElementById('pantallaCentralIframe').src = urlRuta;
+
+            if (elementoTocado && elementoTocado.classList.contains('menu-item')) {
+                const opciones = document.querySelectorAll('.sidebar-menu .menu-item');
+                opciones.forEach(elemento => elemento.classList.remove('activo'));
+                elementoTocado.classList.add('activo');
+                
+                if (elementoTocado.id !== 'btnSubmenuNotas') {
+                    document.getElementById('opcionesNotasEntregadas').style.display = 'none';
+                    document.getElementById('flechaSub').innerText = '▼';
+                }
+            }
+        };
+<script>
+    const API_URL = '/api/tasks';
+
+    // Carga las tareas de la base de datos sin recargar la página
+    async function loadTasks() {
+        try {
+            const res = await fetch(API_URL);
+            const tasks = await res.json();
+            const taskList = document.getElementById("taskList");
+            if (!taskList) return;
+            
+            taskList.innerHTML = ""; // Limpia la lista vieja
+            
+            tasks.forEach(task => {
+                const li = document.createElement("li");
+                // Mantiene el diseño agregando un botón de terminar
+                li.innerHTML = `
+                    <span>${task.text}</span>
+                    <button onclick="deleteTask('${task.id}')" style="margin-left:10px; background:#dc3545; color:white; border:none; padding:3px 8px; border-radius:4px; cursor:pointer;">Terminar</button>
+                `;
+                taskList.appendChild(li);
+            });
+        } catch (error) {
+            console.error("Error al cargar:", error);
+        }
+    }
+
+    // Guarda una nueva tarea en la nube para que la vean todos
+    async function addTask() {
+        const input = document.getElementById("taskInput");
+        if (!input || input.value.trim() === "") return;
+
+        try {
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: input.value })
+            });
+            input.value = "";
+            loadTasks();
+        } catch (error) {
+            console.error("Error al guardar:", error);
+        }
+    }
+
+    // Borra la tarea cuando se termina
+    async function deleteTask(id) {
+        try {
+            await fetch(API_URL, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            loadTasks();
+        } catch (error) {
+            console.error("Error al eliminar:", error);
+        }
+    }
+
+    // Revisa si hay tareas nuevas automáticamente cada 4 segundos
+    setInterval(loadTasks, 4000);
+    loadTasks();
+    </script>
+</body>
+</html>

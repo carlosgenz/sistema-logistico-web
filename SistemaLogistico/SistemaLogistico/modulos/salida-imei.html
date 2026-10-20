@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área de Salida - Panel Logístico</title>
+    <style>
+        /* ESTILOS INTERNOS DE TU ERP OSCURO INDUSTRIAL */
+        body { background-color: #0b111e; color: #f8fafc; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; }
+        .contenedor-central-erp { max-width: 1200px; margin: 0 auto; background-color: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        
+        /* DISEÑO DE LA BARRA DE FILTROS SUPERIORES */
+        .contenedor-filtros-botones { background-color: #111827; border: 1px solid #1e293b; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+        .etiqueta-filtro { font-size: 12px; font-weight: 600; color: #94a3b8; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 0.5px; }
+        .flex-botones { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn-filtro-html { background-color: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 8px 14px; font-size: 13px; font-weight: 600; border-radius: 6px; cursor: pointer; transition: all 0.2s; }
+        .btn-filtro-html:hover { background-color: #273549; border-color: #475569; }
+        .btn-filtro-html.activo { background-color: #2563eb !important; color: #ffffff !important; border-color: #60a5fa !important; box-shadow: 0 0 12px rgba(37, 99, 235, 0.4); }
+
+        /* CUADRO DE TABLA FÍSICA */
+        .cuadro-tabla { background-color: #090d16; border: 1px solid #1e293b; border-radius: 8px; padding: 15px; margin-top: 20px; }
+        .tabla-logistica { width: 100%; border-collapse: collapse; text-align: left; }
+        .tabla-logistica th { background-color: #1e293b; color: #94a3b8; padding: 12px; font-size: 13px; font-weight: 600; text-transform: uppercase; }
+        .tabla-logistica td { padding: 14px 12px; border-bottom: 1px solid #1e293b; font-size: 14px; }
+        .estado-vacio { text-align: center; color: #64748b; padding: 30px; font-weight: 500; }
+        
+        /* FILAS URGENTES PEPS */
+        .fila-urgente { background-color: rgba(220, 38, 38, 0.15) !important; animation: parpadeoSuave 2s infinite; }
+        .linea-urgente-borde { border-left: 4px solid #dc2626 !important; }
+        @keyframes parpadeoSuave { 0% { background-color: rgba(220, 38, 38, 0.1); } 50% { background-color: rgba(220, 38, 38, 0.2); } 100% { background-color: rgba(220, 38, 38, 0.1); } }
+        
+        /* CONTROLES E INPUTS */
+        .badge-dpto { background-color: #1b263b; color: #38bdf8; padding: 4px 8px; border-radius: 4px; font-weight: 600; font-size: 12px; }
+        .input-operador { background-color: #1b263b; border: 1px solid #334155; color: #fff; padding: 8px; border-radius: 4px; width: 120px; outline: none; }
+        .input-operador:focus { border-color: #3b82f6; }
+        .hora-marca { font-family: monospace; font-weight: bold; color: #00d2ff; }
+        
+        /* BOTONES OPERATIVOS */
+        .btn-iniciar { background-color: #2563eb; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px; margin-right: 2px; }
+        .btn-finalizar { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px; margin-right: 2px; }
+        .btn-manual { background-color: #475569; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 500; cursor: pointer; font-size: 12px; margin-right: 2px; }
+        .btn-eliminar { background-color: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-weight: 600; cursor: pointer; font-size: 12px; }
+        
+        .input-modal-tiempo { width: 100%; padding: 10px; box-sizing: border-box; background-color: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 6px; margin-bottom: 15px; font-family: monospace; font-size: 15px; outline: none; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-central-erp">
+        <!-- SECCIÓN DE CONTADORES SUPERIORES NATIVOS -->
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 25px;">
+            <div style="background-color: #111827; padding: 15px; border-radius: 8px; border: 1px solid #1e293b; text-align: center;">
+                <div style="color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase;">Notas en Total</div>
+                <div id="contTotal" style="font-size: 28px; font-weight: bold; color: #ffffff; margin-top: 5px;">0</div>
+            </div>
+            <div style="background-color: #111827; padding: 15px; border-radius: 8px; border: 1px solid #1e293b; text-align: center;">
+                <div style="color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase;">Por Separar</div>
+                <div id="contPorSeparar" style="font-size: 28px; font-weight: bold; color: #eab308; margin-top: 5px;">0</div>
+            </div>
+            <div style="background-color: #111827; padding: 15px; border-radius: 8px; border: 1px solid #1e293b; text-align: center;">
+                <div style="color: #94a3b8; font-size: 12px; font-weight: 600; text-transform: uppercase;">En Proceso de Separación</div>
+                <div id="contEnProceso" style="font-size: 28px; font-weight: bold; color: #3b82f6; margin-top: 5px;">0</div>
+            </div>
+        </div>
+
+        <!-- BARRA SUPERIOR DE BOTONES FILTRO HTML -->
+        <div class="contenedor-filtros-botones">
+            <span class="etiqueta-filtro">Seleccione Departamento (Clic para Filtrar):</span>
+            <div class="flex-botones" id="grupoBotonesFiltro">
+                <button onclick="window.filtrarBotonesHtml(this, 'TODOS')" class="btn-filtro-html activo">Ver Todos</button>
+                <button onclick="window.filtrarBotonesHtml(this, '2')" class="btn-filtro-html">Dpto 2</button>
+                <button onclick="window.filtrarBotonesHtml(this, '7')" class="btn-filtro-html">Dpto 7</button>
+                <button onclick="window.filtrarBotonesHtml(this, '8')" class="btn-filtro-html">Dpto 8</button>
+                <button onclick="window.filtrarBotonesHtml(this, '10')" class="btn-filtro-html">Dpto 10</button>
+                <button onclick="window.filtrarBotonesHtml(this, '12')" class="btn-filtro-html">Dpto 12</button>
+                <button onclick="window.filtrarBotonesHtml(this, '20')" class="btn-filtro-html">Dpto 20</button>
+                <button onclick="window.filtrarBotonesHtml(this, '21')" class="btn-filtro-html">Dpto 21</button>
+                <button onclick="window.filtrarBotonesHtml(this, '23')" class="btn-filtro-html">Dpto 23</button>
+                <button onclick="window.filtrarBotonesHtml(this, '25')" class="btn-filtro-html">Dpto 25</button>
+                <button onclick="window.filtrarBotonesHtml(this, '35')" class="btn-filtro-html">Dpto 35</button>
+                <button onclick="window.filtrarBotonesHtml(this, '58')" class="btn-filtro-html">Dpto 58</button>
+            </div>
+        </div>
+        <!-- CUADRO DE TABLA FÍSICA -->
+        <div class="cuadro-tabla">
+            <table class="tabla-logistica" id="miTablaSalidaFisica">
+                <thead>
+                    <tr>
+                        <th>Fecha Carga</th>
+                        <th>ID Nota</th>
+                        <th>Dpto</th>
+                        <th>Pedido de</th>
+                        <th style="text-align: center;">ITEMS</th>
+                        <th>Encargado Salida</th>
+                        <th>Tiempos (Inicio / Fin)</th>
+                        <th style="text-align: right; padding-right: 20px;">Acciones Operativas</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaSalida">
+                    <tr><td colspan="8" class="estado-vacio">Sincronizando tareas en espejo...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- POP-UP FLOTANTE CARGA MANUAL -->
+    <div id="modalManualSalida" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 9998;">
+        <div style="background-color: #ffffff; width: 400px; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif;">
+            <h3 style="color: #334155; font-size: 22px; font-weight: 700; margin: 0 0 5px 0;">Carga Manual Salida</h3>
+            <p style="color: #64748b; font-size: 14px; margin: 0 0 20px 0; font-weight: 500;">Ingrese las marcas de tiempo para la Nota <span id="modalManualNotaId" style="color:#6366f1; font-weight:bold;">-</span></p>
+            <div style="text-align: left;">
+                <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Hora de Inicio</label>
+                <input type="text" id="horaInicioManualInput" class="input-modal-tiempo" placeholder="00:00:00" style="color: #334155;">
+                <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Hora de Término</label>
+                <input type="text" id="horaFinManualInput" class="input-modal-tiempo" placeholder="00:00:00" style="color: #38bdf8;">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button type="button" id="btnCancelarManual" style="background-color: #94a3b8; color: #ffffff; border: none; font-weight: bold; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer; flex: 1;">Cancelar</button>
+                <button type="button" id="btnConfirmarManual" style="background-color: #6366f1; color: #ffffff; border: none; font-weight: bold; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer; flex: 1;">Guardar Salida</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- POP-UP DE AVISO ÉXITO -->
+    <div id="modalAvisoSalida" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background-color: #ffffff; width: 420px; padding: 35px 25px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif;">
+            <div id="modalIconoContenedor" style="width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;">
+                <span id="modalIconoTexto" style="font-size: 38px; font-weight: bold; line-height: 1;">✓</span>
+            </div>
+            <h2 id="modalTitulo" style="color: #334155; font-size: 24px; font-weight: 700; margin: 0 0 10px 0;">Éxito</h2>
+            <p id="modalMensaje" style="color: #64748b; font-size: 15px; margin: 0 0 25px 0; font-weight: 500;">Mensaje operativo.</p>
+            <button type="button" id="btnCerrarModal" style="background-color: #2563eb; color: #ffffff; border: none; font-weight: bold; padding: 12px 40px; border-radius: 8px; font-size: 15px; cursor: pointer; min-width: 120px;">OK</button>
+        </div>
+    </div>
+
+    <!-- Enlazamos el motor centralizado de datos compartido en la nube -->
+    <script src="base-datos.js"></script>
+    <script>
+        let notaSeleccionadaManualSalidaId = null;
+        let dptoFiltroActivo = "TODOS"; // Variable global para recordar el botón seleccionado
+
+        // 1. POP-UP DINÁMICO ESTILIZADO (ÉXITO / ELIMINAR)
+        function mostrarPopUpSalida(titulo, mensaje, tipo) {
+            const modal = document.getElementById('modalAvisoSalida');
+            const iconoContenedor = document.getElementById('modalIconoContenedor');
+            const iconoTexto = document.getElementById('modalIconoTexto');
+            const btnOk = document.getElementById('btnCerrarModal');
+
+            if (!modal) return Promise.resolve();
+
+            document.getElementById('modalTitulo').innerText = titulo;
+            document.getElementById('modalMensaje').innerText = mensaje;
+
+            if (tipo === 'exito') {
+                if (iconoContenedor) {
+                    iconoContenedor.style.backgroundColor = '#f0fdf4';
+                    iconoContenedor.style.border = '3px solid #bbf7d0';
+                }
+                if (iconoTexto) { iconoTexto.style.color = '#22c55e'; iconoTexto.innerText = '✓'; }
+                if (btnOk) btnOk.style.backgroundColor = '#2563eb';
+            } else if (tipo === 'eliminar') {
+                if (iconoContenedor) {
+                    iconoContenedor.style.backgroundColor = '#fef2f2';
+                    iconoContenedor.style.border = '3px solid #fca5a5';
+                }
+                if (iconoTexto) { iconoTexto.style.color = '#ef4444'; iconoTexto.innerText = '✕'; }
+                if (btnOk) btnOk.style.backgroundColor = '#ef4444';
+            }
+
+            modal.style.display = 'flex';
+
+            return new Promise((resolve) => {
+                btnOk.onclick = function() {
+                    modal.style.display = 'none';
+                    resolve();
+                };
+            });
+        }
+
+        // 2. VENTANA FLOTANTE MANUAL (APERTURA Y CANCELACIÓN)
+        window.abrirModalManualSalida = function(idNota) {
+            notaSeleccionadaManualSalidaId = idNota;
+            const numeroNotaLimpio = idNota.replace("OP-", "");
+            
+            document.getElementById('modalManualNotaId').innerText = numeroNotaLimpio;
+            document.getElementById('horaInicioManualInput').value = "";
+            document.getElementById('horaFinManualInput').value = "";
+            
+            document.getElementById('modalManualSalida').style.display = 'flex';
+        }
+
+        // Cierre de ventana flotante manual sin salvar cambios
+        const btnCancelarManual = document.getElementById('btnCancelarManual');
+        if (btnCancelarManual) {
+            btnCancelarManual.onclick = function() {
+                document.getElementById('modalManualSalida').style.display = 'none';
+                notaSeleccionadaManualSalidaId = null;
+            }
+        }
+        // 3. RENDERIZADOR DE FILAS EN TIEMPO REAL (MÓDULO ESPEJO DE RED)
+        function cargarSalidas() {
+            const tabla = document.getElementById('tablaSalida');
+            if (!tabla) return;
+
+            if (!window.BaseDatosEspejo || typeof window.BaseDatosEspejo.obtenerNotas !== 'function') return;
+            const datos = window.BaseDatosEspejo.obtenerNotas();
+
+            // CONTROL DE CONTADORES SUPERIORES EN RED ESPEJO
+            const totalNotas = datos.length;
+            const porSeparar = datos.filter(nota => nota.estado === "Por Separar").length;
+            const enProceso = datos.filter(nota => nota.estado === "En Separación").length;
+
+            const cTotal = document.getElementById('contTotal');
+            const cPorSeparar = document.getElementById('contPorSeparar');
+            const cEnProceso = document.getElementById('contEnProceso');
+
+            if (cTotal) cTotal.innerText = totalNotas;
+            if (cPorSeparar) cPorSeparar.innerText = porSeparar;
+            if (cEnProceso) cEnProceso.innerText = enProceso;
+
+            // FILTRAR NOTAS EN ESTADO DE SALIDA (Vienen aprobadas del Módulo de Separación)
+            let notasParaSalida = datos.filter(nota => nota.estado === "En Separación");
+
+            if (notasParaSalida.length === 0) {
+                tabla.innerHTML = `<tr><td colspan="8" class="estado-vacio">No hay notas en este sector.</td></tr>`;
+                return;
+            }
+
+            // ORDENAR (Urgentes primero, luego PEPS puro de llegada por orden de ID de nota)
+            notasParaSalida.sort((a, b) => {
+                if (a.urgente && !b.urgente) return -1;
+                if (!a.urgente && b.urgente) return 1;
+                return a.id_nota.localeCompare(b.id_nota);
+            });
+
+            tabla.innerHTML = '';
+            
+            // Renderizar las filas agregando la celda identificadora para el filtro nativo por departamento
+            notasParaSalida.forEach(nota => {
+                const tr = document.createElement('tr');
+                if(nota.urgente) tr.className = 'fila-urgente';
+
+                const numeroNotaLimpio = nota.id_nota.replace("OP-", "");
+                const horaInicioSalida = nota.hora_inicio_salida || "-";
+                const horaFinSalida = nota.hora_fin_salida || "-";
+                const nombreOperador = nota.operador_salida || "";
+                const estaIniciado = nota.hora_inicio_salida ? 'disabled' : '';
+
+                tr.innerHTML = `
+                    <td class="linea-urgente-borde" style="font-weight: 500;">${nota.fecha || ''}</td>
+                    <td style="font-weight: bold; color: #3b82f6; font-family: monospace; font-size: 15px;">${numeroNotaLimpio}</td>
+                    <td class="celda-dpto"><span class="badge-dpto">Dpto ${nota.departamento || ''}</span></td>
+                    <td style="font-weight: 500; color: #ffffff;">${nota.propietario_pedido || ''}</td>
+                    <td style="font-weight: bold; color: #10b981; text-align: center; font-size: 15px;">${nota.cantidad || 0}</td>
+                    <td>
+                        <input type="text" id="ope-${nota.id_nota}" class="input-operador" value="${nombreOperador}" ${estaIniciado} placeholder="Nombre...">
+                    </td>
+                    <td>
+                        <span style="font-size: 11px; color: #94a3b8; display:block;">Inicio: <span class="hora-marca" id="iniSal-${nota.id_nota}">${horaInicioSalida}</span></span>
+                        <span style="font-size: 11px; margin-top: 4px; color: #94a3b8; display:block;">Fin: <span class="hora-marca" id="finSal-${nota.id_nota}" style="color: #38bdf8;">${horaFinSalida}</span></span>
+                    </td>
+                    <td style="text-align: right; white-space: nowrap;">
+                        <button onclick="window.iniciarSalida('${nota.id_nota}')" class="btn-iniciar" style="cursor:pointer;">Iniciar</button>
+                        <button onclick="window.finalizarSalida('${nota.id_nota}')" class="btn-finalizar" style="cursor:pointer;">Finalizar</button>
+                        <button onclick="window.abrirModalManualSalida('${nota.id_nota}')" class="btn-manual" style="cursor:pointer;">Manual</button>
+                        <button onclick="window.eliminarNotaSalida('${nota.id_nota}')" class="btn-eliminar" style="cursor:pointer;">Eliminar</button>
+                    </td>
+                `;
+                tabla.appendChild(tr);
+            });
+
+            // Filtro físico automático para conservar los botones activos que toque el supervisor
+            if (typeof window.ejecutarFiltroFisicoBotones === "function") {
+                window.ejecutarFiltroFisicoBotones();
+            }
+        }
+        // 4. BARRA DE FILTROS SUPERIORES POR DEPARTAMENTO
+        window.filtrarBotonesHtml = function(botonTocado, dptoValor) {
+            const botones = document.querySelectorAll('#grupoBotonesFiltro .btn-filtro-html');
+            botones.forEach(btn => btn.classList.remove('activo'));
+
+            if (botonTocado) botonTocado.classList.add('activo');
+            dptoFiltroActivo = dptoValor;
+
+            window.ejecutarFiltroFisicoBotones();
+        }
+
+        window.ejecutarFiltroFisicoBotones = function() {
+            const filas = document.querySelectorAll('#tablaSalida tr');
+            filas.forEach(fila => {
+                const celda = fila.querySelector('.celda-dpto');
+                if (celda) {
+                    const texto = celda.textContent || celda.innerText;
+                    const dptoNumero = texto.replace("Dpto ", "").trim();
+
+                    if (dptoFiltroActivo === "TODOS" || dptoNumero === dptoFiltroActivo) {
+                        fila.style.display = ""; 
+                    } else {
+                        fila.style.display = "none"; 
+                    }
+                }
+            });
+        }
+        // 5. PROGRAMACIÓN DEL BOTÓN "GUARDAR SALIDA" EN VENTANA FLOTANTE MANUAL
+        const btnConfirmarManual = document.getElementById('btnConfirmarManual');
+        if (btnConfirmarManual) {
+            btnConfirmarManual.onclick = async function() {
+                if (!notaSeleccionadaManualSalidaId) return;
+
+                const inputOpe = document.getElementById(`ope-${notaSeleccionadaManualSalidaId}`);
+                const nombre = inputOpe ? inputOpe.value.trim() : "";
+
+                if (!nombre) {
+                    alert("Por favor, ingrese el nombre del Encargado de Salida en la fila antes de guardar.");
+                    document.getElementById('modalManualSalida').style.display = 'none';
+                    return;
+                }
+
+                const hInicio = document.getElementById('horaInicioManualInput').value.trim();
+                const hFin = document.getElementById('horaFinManualInput').value.trim();
+
+                if (!hInicio || !hFin) {
+                    alert("Debe completar ambos campos de tiempo para realizar la carga manual.");
+                    return;
+                }
+
+                try {
+                    const datos = window.BaseDatosEspejo.obtenerNotas();
+                    const idx = datos.findIndex(n => n.id_nota === notaSeleccionadaManualSalidaId);
+
+                    if (idx !== -1) {
+                        datos[idx].hora_inicio_salida = hInicio;
+                        datos[idx].hora_fin_salida = hFin;
+                        datos[idx].operador_salida = nombre;
+                        
+                        // CAMBIO DE ESTADO ESPEJO NATIVO: Se despacha y sale de la pantalla
+                        datos[idx].estado = "Listo para Despacho";
+
+                        if (!datos[idx].operadores) datos[idx].operadores = {};
+                        datos[idx].operadores.salida = nombre;
+
+                        if (!datos[idx].tiempos) datos[idx].tiempos = { salida: {} };
+                        if (!datos[idx].tiempos.salida) datos[idx].tiempos.salida = {};
+                        datos[idx].tiempos.salida.inicio = hInicio;
+                        datos[idx].tiempos.salida.fin = hFin;
+
+                        document.getElementById('modalManualSalida').style.display = 'none';
+                        
+                        // Guardado seguro en tu servidor distribuido de Firebase
+                        await window.BaseDatosEspejo.guardarNotas(datos);
+                        notaSeleccionadaManualSalidaId = null;
+
+                        await mostrarPopUpSalida("Salida Finalizada", "La nota manual ha sido procesada y despachada con éxito.", "exito");
+                        cargarSalidas();
+                    }
+                } catch (error) {
+                    console.error("Fallo de guardado manual en la red espejo:", error);
+                    alert("Problema de red: No se pudo subir el registro manual.");
+                }
+            }
+        }
+        // 6. FLUJO AUTOMÁTICO: BOTÓN INICIAR CONTROL DESDE LA FILA
+        window.iniciarSalida = async function(idNota) {
+            const inputOpe = document.getElementById(`ope-${idNota}`);
+            const nombre = inputOpe ? inputOpe.value.trim() : "";
+
+            if(!nombre) {
+                alert("Por favor, ingrese el nombre del Encargado de Salida antes de iniciar.");
+                return;
+            }
+
+            const ahora = new Date().toLocaleTimeString('es-ES');
+            const elementoIni = document.getElementById(`iniSal-${idNota}`);
+            if (elementoIni) elementoIni.innerText = ahora;
+            if (inputOpe) inputOpe.disabled = true;
+
+            try {
+                const datos = window.BaseDatosEspejo.obtenerNotas();
+                const idx = datos.findIndex(n => n.id_nota === idNota);
+                if(idx !== -1) {
+                    datos[idx].hora_inicio_salida = ahora;
+                    datos[idx].operador_salida = nombre;
+
+                    if (!datos[idx].operadores) datos[idx].operadores = {};
+                    datos[idx].operadores.salida = nombre;
+
+                    if (!datos[idx].tiempos) datos[idx].tiempos = { salida: {} };
+                    if (!datos[idx].tiempos.salida) datos[idx].tiempos.salida = {};
+                    datos[idx].tiempos.salida.inicio = ahora;
+                    
+                    // Sincronización mandatoria forzada con Firebase
+                    await window.BaseDatosEspejo.guardarNotas(datos);
+                    console.log(`Nota ${idNota} iniciada con éxito en internet.`);
+                }
+            } catch (error) {
+                console.error("Error al registrar marcas de inicio en red:", error);
+            }
+        }
+
+        // 7. FLUJO AUTOMÁTICO: BOTÓN FINALIZAR CONTROL DESDE LA FILA
+        window.finalizarSalida = async function(idNota) {
+            const elementoIni = document.getElementById(`iniSal-${idNota}`);
+            const horaInicioReal = elementoIni ? elementoIni.innerText : "-";
+            const inputOpe = document.getElementById(`ope-${idNota}`);
+            const nombre = inputOpe ? inputOpe.value.trim() : "";
+
+            if (!nombre) {
+                alert("Por favor, ingrese el nombre del Encargado de Salida.");
+                return;
+            }
+
+            if (horaInicioReal === "-" || horaInicioReal === "") {
+                alert("Primero debe hacer clic en 'Iniciar' para registrar el comienzo automático.");
+                return;
+            }
+
+            const ahoraFin = new Date().toLocaleTimeString('es-ES');
+            
+            try {
+                const datos = window.BaseDatosEspejo.obtenerNotas();
+                const idx = datos.findIndex(n => n.id_nota === idNota);
+
+                if(idx !== -1) {
+                    datos[idx].hora_inicio_salida = horaInicioReal;
+                    datos[idx].hora_fin_salida = ahoraFin;
+                    datos[idx].operador_salida = nombre;
+                    
+                    // CAMBIO DE ESTADO ESPEJO NATIVO: Al guardar viaja a la nube y sale de pantalla
+                    datos[idx].estado = "Listo para Despacho";
+
+                    if (!datos[idx].tiempos) datos[idx].tiempos = { salida: {} };
+                    if (!datos[idx].tiempos.salida) datos[idx].tiempos.salida = {};
+                    datos[idx].tiempos.salida.fin = ahoraFin;
+
+                    await window.BaseDatosEspejo.guardarNotas(datos);
+                    
+                    await mostrarPopUpSalida("Salida Finalizada", "La nota ha sido despachada con éxito.", "exito");
+                    cargarSalidas();
+                }
+            } catch (error) {
+                console.error("Error al finalizar despacho de salida:", error);
+            }
+        }
+        // 8. FLUJO AUTOMÁTICO: ELIMINAR NOTA DIRECTAMENTE DE LA RED
+        window.eliminarNotaSalida = async function(idNota) {
+            if(!confirm("¿Está seguro de que desea eliminar permanentemente esta nota?")) return;
+
+            try {
+                let datos = window.BaseDatosEspejo.obtenerNotas();
+                datos = datos.filter(n => n.id_nota !== idNota);
+                
+                await window.BaseDatosEspejo.guardarNotas(datos);
+                
+                await mostrarPopUpSalida("Nota Eliminada", "La nota de salida ha sido removida del sistema.", "eliminar");
+                cargarSalidas();
+            } catch (error) {
+                console.error("Error al borrar en red espejo:", error);
+                alert("No se pudo completar la eliminación en el servidor.");
+            }
+        }
+
+        // 9. ESCUCHADORES DE RED ESPEJO ACTIVOS (FIREBASE INTERNET COUPLING)
+        window.addEventListener('storage', cargarSalidas);
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarSalidas();
+            
+            // Forzado preventivo de sincronización inicial con Firebase a los 800ms
+            setTimeout(() => {
+                if (window.BaseDatosEspejo && typeof window.BaseDatosEspejo.descargarDatosDeRed === "function") {
+                    window.BaseDatosEspejo.descargarDatosDeRed();
+                } else {
+                    cargarSalidas();
+                }
+            }, 800);
+        });
+    </script>
+</body>
+</html>

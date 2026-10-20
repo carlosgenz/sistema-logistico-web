@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notas para Entrega - Panel Logístico</title>
+    <style>
+        body { background-color: #0b111e; color: #e2e8f0; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
+        .contenedor-completo { width: 100%; max-width: 100%; margin: 0 auto; }
+        .encabezado { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 16px; margin-bottom: 24px; }
+        .titulo { font-size: 26px; font-weight: bold; color: #ffffff; margin: 0; }
+        .subtitulo { font-size: 14px; color: #94a3b8; margin: 4px 0 0 0; }
+        .btn-volver { background-color: #1e293b; color: #ffffff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; display: inline-block; }
+        .btn-volver:hover { background-color: #334155; }
+        .grid-contadores { display: grid; grid-template-columns: repeat(6, 1fr) !important; gap: 12px; margin-bottom: 24px; }
+        .tarjeta-contador { background-color: #131c2e; border: 1px solid #1e293b; border-radius: 10px; padding: 12px 6px; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3); }
+        .contador-numero { font-size: 24px; font-weight: bold; font-family: monospace; margin-top: 6px; }
+        .num-total { color: #38bdf8; }
+        .cuadro-filtro-botones { background-color: #131c2e; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; margin-bottom: 24px; }
+        .contenedor-botones-html { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .btn-filtro-html { background-color: #1b263b; border: 1px solid #475569; color: #ffffff; padding: 10px 16px; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .btn-filtro-html:hover { border-color: #6366f1; background-color: #233253; }
+        .btn-filtro-html.activo { background-color: #6366f1; border-color: #6366f1; }
+        .cuadro-tabla { background-color: #131c2e; border: 1px solid #1e293b; border-radius: 12px; margin-bottom: 24px; overflow: hidden; }
+        .tabla-logistica { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; }
+        .tabla-logistica th { background-color: #172237; color: #94a3b8; text-transform: uppercase; font-size: 12px; font-weight: 600; padding: 16px; border-bottom: 1px solid #1e293b; }
+        .tabla-logistica td { padding: 14px 16px; border-bottom: 1px solid #1e293b; color: #cbd5e1; vertical-align: middle; }
+        .tabla-logistica tr:hover { background-color: #16223f; }
+        .badge-dpto { background-color: #1b263b; border: 1px solid #475569; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-weight: bold; }
+        .input-entrega { background-color: #1b263b; border: 1px solid #475569; border-radius: 6px; padding: 8px; color: #ffffff; font-size: 13px; width: 120px; outline: none; margin-bottom: 6px; display: block; }
+        .hora-marca { font-family: monospace; font-size: 13px; color: #10b981; font-weight: bold; }
+        .btn-iniciar { background-color: #2563eb; color: #ffffff; border: none; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        .btn-finalizar { background-color: #10b981; color: #ffffff; border: none; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        .btn-manual { background-color: #6366f1; color: #ffffff; border: none; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        .btn-eliminar { background-color: #ef4444; color: #ffffff; border: none; font-weight: bold; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 11px; text-transform: uppercase; }
+        .input-modal-tiempo { width: 100%; background-color: #f8fafc; border: 2px solid #cbd5e1; border-radius: 8px; padding: 10px; color: #334155; font-family: monospace; font-size: 16px; font-weight: bold; box-sizing: border-box; outline: none; text-align: center; margin-bottom: 16px; }
+        @keyframes parpadeoFila { 0%, 100% { background-color: rgba(239, 68, 68, 0.2); } 50% { background-color: rgba(127, 29, 29, 0.5); } }
+        .fila-urgente { animation: parpadeoFila 1.5s infinite !important; }
+        .linea-urgente-borde { border-left: 5px solid #ef4444 !important; }
+        .estado-vacio { text-align: center; color: #64748b; padding: 40px !important; font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-completo">
+        <div class="encabezado">
+            <div>
+                <h1 class="titulo">4. Área de Entrega</h1>
+                <p class="subtitulo">Panel de control de tiempos y despacho final de mercadería</p>
+            </div>
+            <a href="../index.html" class="btn-volver">← Volver al Panel</a>
+        </div>
+
+        <!-- BARRA CON LOS 6 INDICADORES LOGÍSTICOS REQUERIDOS -->
+        <div class="grid-contadores">
+            <div class="tarjeta-contador">
+                <span style="font-size: 10px; text-transform: uppercase; color:#94a3b8; font-weight:bold;">Notas Total</span>
+                <div id="contTotal" class="contador-numero num-total">0</div>
+            </div>
+            <div class="tarjeta-contador">
+                <span style="font-size: 10px; text-transform: uppercase; color:#fbbf24; font-weight:bold;">Por Separar</span>
+                <div id="contPorSeparar" class="contador-numero" style="color: #fbbf24;">0</div>
+            </div>
+            <div class="tarjeta-contador">
+                <span style="font-size: 10px; text-transform: uppercase; color:#a78bfa; font-weight:bold;">En Separación</span>
+                <div id="contEnSeparacion" class="contador-numero" style="color: #a78bfa;">0</div>
+            </div>
+            <div class="tarjeta-contador">
+                <span style="font-size: 10px; text-transform: uppercase; color:#f43f5e; font-weight:bold;">Por Dar Salida</span>
+                <div id="contPorDarSalida" class="contador-numero" style="color: #f43f5e;">0</div>
+            </div>
+            <div class="tarjeta-contador">
+                <span style="font-size: 10px; text-transform: uppercase; color:#38bdf8; font-weight:bold;">Por Entregar</span>
+                <div id="contPorEntregar" class="contador-numero" style="color: #38bdf8;">0</div>
+            </div>
+            <div class="tarjeta-contador">
+                <span style="font-size: 10px; text-transform: uppercase; color:#10b981; font-weight:bold;">Entregadas</span>
+                <div id="contEntregadas" class="contador-numero" style="color: #10b981;">0</div>
+            </div>
+        </div>
+
+        <div class="cuadro-filtro-botones">
+            <span class="etiqueta-filtro">Seleccione Departamento (Clic para Filtrar):</span>
+            <div class="contenedor-botones-html" id="grupoBotonesFiltro">
+                <button type="button" class="btn-filtro-html activo" onclick="filtrarBotonesHtml(this, 'TODOS')">Ver Todos</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '2')">Dpto 2</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '7')">Dpto 7</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '8')">Dpto 8</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '10')">Dpto 10</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '12')">Dpto 12</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '20')">Dpto 20</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '21')">Dpto 21</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '23')">Dpto 23</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '25')">Dpto 25</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '35')">Dpto 35</button>
+                <button type="button" class="btn-filtro-html" onclick="filtrarBotonesHtml(this, '58')">Dpto 58</button>
+            </div>
+        </div>
+        <div class="cuadro-tabla">
+            <table class="tabla-logistica" id="miTablaEntregaFisica">
+                <thead>
+                    <tr>
+                        <th>Fecha Carga</th>
+                        <th>ID Nota</th>
+                        <th>Dpto</th>
+                        <th>Pedido de</th>
+                        <th style="text-align: center;">ITEMS</th>
+                        <th>Historial Operadores</th>
+                        <th>Datos de Entrega</th>
+                        <th>Tiempos (Inicio / Fin)</th>
+                        <th style="text-align: right; padding-right: 20px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaEntrega">
+                    <tr><td colspan="9" class="estado-vacio">Sincronizando registros en espejo...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 1. POP-UP FLOTANTE PARA CARGA DE TIEMPOS MANUALES EN ENTREGA -->
+    <div id="modalManualEntrega" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 9998;">
+        <div style="background-color: #ffffff; width: 400px; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif;">
+            <h3 style="color: #334155; font-size: 22px; font-weight: 700; margin: 0 0 5px 0;">Carga Manual Entrega</h3>
+            <p style="color: #64748b; font-size: 14px; margin: 0 0 20px 0; font-weight: 500;">Ingrese las marcas de tiempo para la Nota <span id="modalManualNotaId" style="color:#6366f1; font-weight:bold;">-</span></p>
+            <div style="text-align: left;">
+                <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Hora de Inicio</label>
+                <input type="text" id="horaInicioManualInput" class="input-modal-tiempo" placeholder="00:00:00">
+                <label style="display:block; font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Hora de Término</label>
+                <input type="text" id="horaFinManualInput" class="input-modal-tiempo" placeholder="00:00:00" style="color: #38bdf8;">
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button type="button" id="btnCancelarManual" style="background-color: #94a3b8; color: #ffffff; border: none; font-weight: bold; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer; flex: 1;">Cancelar</button>
+                <button type="button" id="btnConfirmarManual" style="background-color: #6366f1; color: #ffffff; border: none; font-weight: bold; padding: 12px; border-radius: 8px; font-size: 14px; cursor: pointer; flex: 1;">Guardar Entrega</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. POP-UP DE AVISO ESTILO POP-UP DINÁMICO (ÉXITO / ELIMINAR) -->
+    <div id="modalAvisoEntrega" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 9999;">
+        <div style="background-color: #ffffff; width: 420px; padding: 35px 25px; border-radius: 16px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); font-family: 'Segoe UI', sans-serif;">
+            <div id="modalIconoContenedor" style="width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 20px auto;">
+                <span id="modalIconoTexto" style="font-size: 38px; font-weight: bold; line-height: 1;">✓</span>
+            </div>
+            <h2 id="modalTitulo" style="color: #334155; font-size: 24px; font-weight: 700; margin: 0 0 10px 0;">Éxito</h2>
+            <p id="modalMensaje" style="color: #64748b; font-size: 15px; margin: 0 0 25px 0; font-weight: 500;">Mensaje operativo.</p>
+            <button type="button" id="btnCerrarModal" style="background-color: #2563eb; color: #ffffff; border: none; font-weight: bold; padding: 12px 40px; border-radius: 8px; font-size: 15px; cursor: pointer; min-width: 120px;">OK</button>
+        </div>
+    </div>
+    
+    <!-- LÓGICA DE PROGRAMACIÓN CONECTADA AL MOTOR CENTRAL DE RED -->
+    <script src="base-datos.js"></script>
+
+    <script>
+        let notaSeleccionadaManualEntregaId = null;
+        let dptoFiltroActivo = "TODOS"; 
+
+        // 1. POP-UP DE AVISO ESTILIZADO CON CONTROL DE SEGURIDAD
+        function mostrarPopUpEntrega(titulo, mensaje, tipo) {
+            const modal = document.getElementById('modalAvisoEntrega') || document.getElementById('modalAviso');
+            const iconoContenedor = document.getElementById('modalIconoContenedor');
+            const iconoTexto = document.getElementById('modalIconoTexto');
+            const btnOk = document.getElementById('btnCerrarModal');
+
+            if (!modal) return Promise.resolve();
+
+            document.getElementById('modalTitulo').innerText = titulo;
+            document.getElementById('modalMensaje').innerText = mensaje;
+
+            if (tipo === 'exito') {
+                if (iconoContenedor) iconoContenedor.style.backgroundColor = '#f0fdf4';
+                if (iconoContenedor) iconoContenedor.style.border = '3px solid #bbf7d0';
+                if (iconoTexto) { iconoTexto.style.color = '#22c55e'; iconoTexto.innerText = '✓'; }
+                if (btnOk) btnOk.style.backgroundColor = '#2563eb';
+            } else if (tipo === 'eliminar') {
+                if (iconoContenedor) iconoContenedor.style.backgroundColor = '#fef2f2';
+                if (iconoContenedor) iconoContenedor.style.border = '3px solid #fca5a5';
+                if (iconoTexto) { iconoTexto.style.color = '#ef4444'; iconoTexto.innerText = '✕'; }
+                if (btnOk) btnOk.style.backgroundColor = '#ef4444';
+            }
+            modal.style.display = 'flex';
+            return new Promise((resolve) => {
+                if (btnOk) btnOk.onclick = function() { modal.style.display = 'none'; resolve(); };
+            });
+        }
+
+        // 2. FILTRADO INTERACTIVO DE DEPARTAMENTOS POR BOTÓN
+        window.filtrarPorDepartamento = function(nombreDpto) {
+            dptoFiltroActivo = nombreDpto.toUpperCase().replace("DPTO ", "");
+            cargarEntrega();
+        }
+
+        // 3. APERTURA DE VENTANA MODAL PARA REGISTRO MANUAL
+        window.abrirModalManualEntrega = function(idNota) {
+            notaSeleccionadaManualEntregaId = idNota;
+            const numeroNotaLimpio = idNota.replace("OP-", "");
+            document.getElementById('modalManualNotaId').innerText = numeroNotaLimpio;
+            document.getElementById('horaInicioManualInput').value = "";
+            document.getElementById('horaFinManualInput').value = "";
+            document.getElementById('modalManualEntrega').style.display = 'flex';
+        }
+
+        const btnCancelarManual = document.getElementById('btnCancelarManual');
+        if (btnCancelarManual) {
+            btnCancelarManual.onclick = function() {
+                document.getElementById('modalManualEntrega').style.display = 'none';
+                notaSeleccionadaManualEntregaId = null;
+            }
+        }
+
+        // 4. FUNCIÓN CENTRAL DE RENDERIZADO Y CÁLCULO DE CAPACIDAD LOGÍSTICA
+        function cargarEntrega() {
+            const tabla = document.getElementById('tablaEntrega');
+            if (!tabla) return;
+
+            if (!window.BaseDatosEspejo || typeof window.BaseDatosEspejo.obtenerNotas !== 'function') return;
+            const datos = window.BaseDatosEspejo.obtenerNotas() || [];
+
+            // CÁLCULO EN TIEMPO REAL COMPATIBLE CON HISTORIAL LOCAL Y RED COMPARTIDA
+            const totalNotas = datos.length;
+            const porSeparar = datos.filter(nota => (nota.estado === "Pendiente" || nota.estado === "Por Separar") && (!nota.hora_inicio || nota.hora_inicio === "-")).length;
+            const enSeparacion = datos.filter(nota => (nota.estado === "Pendiente" || nota.estado === "Por Separar") && (nota.hora_inicio && nota.hora_inicio !== "-")).length;
+            const porDarSalida = datos.filter(nota => nota.estado === "En Separación" || nota.estado === "Por Dar Salida").length;
+            const porEntregar = datos.filter(nota => nota.estado === "Listo para Despacho" || nota.estado === "Por Entregar").length;
+            const entregadas = datos.filter(nota => nota.estado === "Entregado" || nota.estado === "Entregadas").length;
+
+            // Inyección segura en tus contenedores originales
+            if(document.getElementById('contTotal')) document.getElementById('contTotal').innerText = totalNotas;
+            if(document.getElementById('contPorSeparar')) document.getElementById('contPorSeparar').innerText = porSeparar;
+            if(document.getElementById('contEnSeparacion')) document.getElementById('contEnSeparacion').innerText = enSeparacion;
+            if(document.getElementById('contPorDarSalida')) document.getElementById('contPorDarSalida').innerText = porDarSalida;
+            if(document.getElementById('contPorEntregar')) document.getElementById('contPorEntregar').innerText = porEntregar;
+            if(document.getElementById('contEntregadas')) document.getElementById('contEntregadas').innerText = entregadas;
+
+            // Filtro de listado base para el despacho de la pantalla
+            let notasParaEntrega = datos.filter(nota => nota.estado === "Listo para Despacho" || nota.estado === "Por Entregar");
+
+            // Filtrado dinámico por sector seleccionado
+            if (dptoFiltroActivo !== "TODOS" && dptoFiltroActivo !== "VER TODOS") {
+                notasParaEntrega = notasParaEntrega.filter(nota => {
+                    const sectorNota = (nota.dpto || nota.departamento || "").toUpperCase();
+                    return sectorNota.includes(dptoFiltroActivo);
+                });
+            }
+
+            if (notasParaEntrega.length === 0) {
+                tabla.innerHTML = `<tr><td colspan="9" class="estado-vacio" style="text-align:center; padding:20px; color:#94a3b8;">No hay notas pendientes de entrega en el sistema.</td></tr>`;
+                return;
+            }
+
+            // Ordenamiento inteligente: Urgentes primero
+            notasParaEntrega.sort((a, b) => {
+                if (a.urgente && !b.urgente) return -1;
+                if (!a.urgente && b.urgente) return 1;
+                const idA = a.id_nota || a.id || "";
+                const idB = b.id_nota || b.id || "";
+                return idA.localeCompare(idB);
+            });
+
+            tabla.innerHTML = '';
+
+            notasParaEntrega.forEach((nota) => {
+                const fila = document.createElement('tr');
+                const idNota = nota.id_nota || nota.id;
+
+                if (nota.urgente) {
+                    fila.style.backgroundColor = 'rgba(239, 68, 68, 0.12)';
+                    fila.style.borderLeft = '4px solid #ef4444';
+                }
+
+                const nombreSep = nota.separador || nota.operadores?.separador || 'S/A';
+                const nombreSal = nota.operador_salida || nota.operadores?.salida || 'S/A';
+                const nombreEnt = nota.operador_entrega || nota.operadores?.entrega || '';
+                
+                const hInicio = nota.hora_inicio_entrega || nota.tiempos?.entrega?.inicio || '-';
+                const hFin = nota.hora_fin_entrega || nota.tiempos?.entrega?.fin || '-';
+                const transportista = nota.transportista || '';
+
+                fila.innerHTML = `
+                    <td>${nota.fechaCarga || nota.fecha || ''}</td>
+                    <td><strong>${idNota}</strong></td>
+                    <td><span class="badge-dpto">${nota.dpto || nota.departamento || ''}</span></td>
+                    <td>${nota.propietario_pedido || nota.pedidoDe || ''}</td>
+                    <td>${nota.items || (nota.cantidad + ' bultos')}</td>
+                    <td style="font-size:12px; color:#94a3b8; line-height: 1.4;">
+                        Sep: <strong>${nombreSep}</strong><br>Sal: <strong>${nombreSal}</strong>
+                    </td>
+                    <td>
+                        <input type="text" class="control-input" id="trans-${idNota}" value="${transportista}" placeholder="Transportista / Chofer" style="background-color:#070c16; border:1px solid #334155; color:#fff; padding:6px; font-size:13px; border-radius:4px; margin-bottom:6px; width:130px; box-sizing:border-box;"><br>
+                        <input type="text" class="control-input" id="ent-${idNota}" value="${nombreEnt}" placeholder="Operario Entrega" style="background-color:#070c16; border:1px solid #334155; color:#fff; padding:6px; font-size:13px; border-radius:4px; width:130px; box-sizing:border-box;" ${hInicio !== '-' ? 'disabled' : ''}>
+                    </td>
+                    <td id="time-container-${idNota}" style="font-family:monospace; color:#00d2ff; font-size:13px; white-space: nowrap;">${hInicio} / ${hFin}</td>
+                    <td>
+                        <button type="button" class="btn-procesar-mosaico" style="padding:6px 12px; font-size:12px; background-color:#2563eb; color:#fff; margin-bottom:6px; display:block; width:100%; text-transform:uppercase; font-weight:bold;" onclick="window.iniciarEntregaTarea('${idNota}')">Iniciar</button>
+                        <button type="button" class="btn-cargar-sistema" style="padding:6px 12px; font-size:12px; background:linear-gradient(135deg, #10b981, #059669); color:#fff; margin-bottom:6px; display:block; width:100%; text-transform:uppercase; font-weight:bold;" onclick="window.finalizarEntregaTarea('${idNota}')">Terminar</button>
+                        <button type="button" class="btn-urgente" style="padding:6px 12px; font-size:12px; background-color:#1e293b; color:#94a3b8; display:block; width:100%; text-transform:uppercase; font-weight:bold;" onclick="window.abrirModalManualEntrega('${idNota}')">✏️ Manual</button>
+                    </td>
+                `;
+                tabla.appendChild(fila);
+            });
+        }
+        // 5. FLUJO AUTOMÁTICO: BOTÓN INICIAR ENTREGA (EN RED)
+        window.iniciarEntregaTarea = async function(idNota) {
+            const inputOperario = document.getElementById(`ent-${idNota}`);
+            const inputTrans = document.getElementById(`trans-${idNota}`);
+            const nombreOperario = inputOperario ? inputOperario.value.trim().toUpperCase() : "";
+            const nombreTrans = inputTrans ? inputTrans.value.trim().toUpperCase() : "";
+
+            if (!nombreOperario) {
+                alert("⚠️ Por favor, ingrese el nombre del Operario de Entrega antes de iniciar.");
+                return;
+            }
+
+            const ahora = new Date().toLocaleTimeString('es-ES');
+            
+            // Actualización visual inmediata en la pantalla de la oficina
+            const celdaTiempo = document.getElementById(`time-container-${idNota}`);
+            if (celdaTiempo) celdaTiempo.innerText = `${ahora} / -`;
+            if (inputOperario) inputOperario.disabled = true;
+
+            try {
+                const datos = window.BaseDatosEspejo.obtenerNotas();
+                const idx = datos.findIndex(n => (n.id_nota === idNota || n.id === idNota));
+                
+                if (idx !== -1) {
+                    // Sustitución y guardado de parámetros en el objeto global
+                    datos[idx].hora_inicio_entrega = ahora;
+                    datos[idx].operador_entrega = nombreOperario;
+                    datos[idx].transportista = nombreTrans;
+
+                    if (!datos[idx].operadores) datos[idx].operadores = {};
+                    datos[idx].operadores.entrega = nombreOperario;
+
+                    if (!datos[idx].tiempos) datos[idx].tiempos = { entrega: {} };
+                    if (!datos[idx].tiempos.entrega) datos[idx].tiempos.entrega = {};
+                    datos[idx].tiempos.entrega.inicio = ahora;
+
+                    // Subir a la nube congelando la acción con await
+                    await window.BaseDatosEspejo.guardarNotas(datos);
+                    console.log(`Entrega de nota ${idNota} iniciada en red.`);
+                }
+            } catch (error) {
+                console.error("Error al iniciar entrega en red:", error);
+                if (inputOperario) inputOperario.disabled = false;
+            }
+        }
+
+        // 6. CONTROL Y PROCESO DE ENTREGA MANUAL POR TECLADO
+        const btnConfirmarManual = document.getElementById('btnConfirmarManual');
+        if (btnConfirmarManual) {
+            btnConfirmarManual.onclick = async function() {
+                if (!notaSeleccionadaManualEntregaId) return;
+
+                const inputOperario = document.getElementById(`ent-${notaSeleccionadaManualEntregaId}`);
+                const inputTrans = document.getElementById(`trans-${notaSeleccionadaManualEntregaId}`);
+                const nombreOperario = inputOperario ? inputOperario.value.trim().toUpperCase() : "";
+                const nombreTrans = inputTrans ? inputTrans.value.trim().toUpperCase() : "";
+
+                if (!nombreOperario) {
+                    alert("⚠️ Por favor, ingrese el nombre del Operario de Entrega en la fila.");
+                    document.getElementById('modalManualEntrega').style.display = 'none';
+                    return;
+                }
+
+                const hInicio = document.getElementById('horaInicioManualInput').value.trim();
+                const hFin = document.getElementById('horaFinManualInput').value.trim();
+
+                if (!hInicio || !hFin) {
+                    alert("Debe completar ambos campos de tiempo para realizar la carga manual.");
+                    return;
+                }
+
+                try {
+                    const datos = window.BaseDatosEspejo.obtenerNotas();
+                    const idx = datos.findIndex(n => (n.id_nota === notaSeleccionadaManualEntregaId || n.id === notaSeleccionadaManualEntregaId));
+
+                    if (idx !== -1) {
+                        // Cambiamos el estado a Entregado/Entregadas para concluir la orden
+                        datos[idx].hora_inicio_entrega = hInicio;
+                        datos[idx].hora_fin_entrega = hFin;
+                        datos[idx].operador_entrega = nombreOperario;
+                        datos[idx].transportista = nombreTrans;
+                        datos[idx].estado = "Entregadas"; 
+
+                        if (!datos[idx].operadores) datos[idx].operadores = {};
+                        datos[idx].operadores.entrega = nombreOperario;
+
+                        if (!datos[idx].tiempos) datos[idx].tiempos = { entrega: {} };
+                        datos[idx].tiempos.entrega = { inicio: hInicio, fin: hFin };
+
+                        // Guardar de forma asíncrona en el casillero web compartido
+                        await window.BaseDatosEspejo.guardarNotas(datos);
+
+                        document.getElementById('modalManualEntrega').style.display = 'none';
+                        notaSeleccionadaManualEntregaId = null;
+
+                        await mostrarPopUpEntrega("Despacho Concluido", "El registro manual de entrega ha sido guardado con éxito.", "exito");
+                        cargarEntrega();
+                    }
+                } catch (error) {
+                    console.error("Error en despacho manual en red:", error);
+                }
+            }
+        }
+
+        // 7. FLUJO AUTOMÁTICO: BOTÓN FINALIZAR ENTREGA (EN RED)
+        window.finalizarEntregaTarea = async function(idNota) {
+            const inputOperario = document.getElementById(`ent-${idNota}`);
+            const inputTrans = document.getElementById(`trans-${idNota}`);
+            const nombreOperario = inputOperario ? inputOperario.value.trim().toUpperCase() : "";
+            const nombreTrans = inputTrans ? inputTrans.value.trim().toUpperCase() : "";
+
+            // Buscamos si ya se marcó el inicio
+            const datosParaValidar = window.BaseDatosEspejo.obtenerNotas();
+            const notaValidar = datosParaValidar.find(n => (n.id_nota === idNota || n.id === idNota));
+            const horaInicioReal = notaValidar ? (notaValidar.hora_inicio_entrega || notaValidar.tiempos?.entrega?.inicio || "-") : "-";
+
+            if (!nombreOperario) {
+                alert("⚠️ Por favor, ingrese el nombre del Operario de Entrega.");
+                return;
+            }
+
+            if (horaInicioReal === "-") {
+                alert("Primero debe hacer clic en 'Iniciar' para registrar el comienzo del despacho automático.");
+                return;
+            }
+
+            const ahoraFin = new Date().toLocaleTimeString('es-ES');
+            
+            try {
+                const datos = window.BaseDatosEspejo.obtenerNotas();
+                const idx = datos.findIndex(n => (n.id_nota === idNota || n.id === idNota));
+                
+                if (idx !== -1) {
+                    datos[idx].hora_inicio_entrega = horaInicioReal;
+                    datos[idx].hora_fin_entrega = ahoraFin;
+                    datos[idx].operador_entrega = nombreOperario;
+                    datos[idx].transportista = nombreTrans;
+                    datos[idx].estado = "Entregadas"; // Concluye el flujo en la base compartida
+
+                    if (!datos[idx].operadores) datos[idx].operadores = {};
+                    datos[idx].operadores.entrega = nombreOperario;
+
+                    if (!datos[idx].tiempos) datos[idx].tiempos = { entrega: {} };
+                    datos[idx].tiempos.entrega = { inicio: horaInicioReal, fin: ahoraFin };
+
+                    // Subir a internet deteniendo el flujo con await
+                    await window.BaseDatosEspejo.guardarNotas(datos);
+                    
+                    // Alerta estilizada y limpieza de la fila en pantalla
+                    await mostrarPopUpEntrega("Despacho Concluido", "La remisión ha sido cerrada y archivada en el historial de mercaderías entregadas.", "exito");
+                    cargarEntrega();
+                }
+            } catch (error) {
+                console.error("Error al finalizar entrega en red:", error);
+            }
+        }
+
+        // 8. ESCUCHA ACTIVA DE RED ENTRE MÚLTIPLES COMPUTADORAS
+        window.addEventListener('storage', cargarEntrega);
+        window.addEventListener('load', cargarEntrega);
+    </script>
+</body>
+</html>

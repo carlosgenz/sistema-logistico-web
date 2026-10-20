@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Operarios - Sistema Logístico</title>
+    <style>
+        /* --- RESETEO Y ESTRUCTURA BASE --- */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0b0e14;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* --- BARRA LATERAL (SIDEBAR) --- */
+        .sidebar {
+            width: 260px;
+            background-color: #111622;
+            border-right: 1px solid #1f293d;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar-header {
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid #1f293d;
+        }
+        .sidebar-header h2 {
+            font-size: 16px;
+            margin: 0;
+            color: #fff;
+        }
+        .sidebar-menu {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 0;
+        }
+        .menu-item, .dropdown-btn {
+            padding: 12px 20px;
+            color: #a0aec0;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+        .menu-item:hover, .dropdown-btn:hover {
+            background-color: #1a2233;
+            color: #fff;
+        }
+        .menu-item.active {
+            background-color: #1c273c;
+            color: #00bcd4;
+            border-left: 4px solid #00bcd4;
+        }
+
+        .dropdown-content {
+            background-color: #0d111a;
+            padding-left: 15px;
+        }
+        .dropdown-content a {
+            display: block;
+            padding: 8px 20px;
+            color: #a0aec0;
+            font-size: 13px;
+            text-decoration: none;
+        }
+        .dropdown-content a:hover { color: #fff; }
+
+        /* --- CUERPO PRINCIPAL --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            background-color: #0b0e14;
+            box-sizing: border-box;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1f293d;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+        .view-title h1 { font-size: 24px; margin: 0; }
+        .view-title p { margin: 5px 0 0 0; color: #8a99ad; font-size: 14px; }
+        
+        .time-counter {
+            background-color: #111622;
+            border: 1px solid #1f293d;
+            padding: 8px 15px;
+            border-radius: 6px;
+            text-align: right;
+        }
+        .time-counter small { color: #00bcd4; font-size: 10px; font-weight: bold; display: block; }
+        #global-timer { font-family: monospace; font-size: 18px; color: #fff; }
+
+        /* --- INDICADORES KPIs --- */
+        .kpi-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 35px;
+        }
+        .kpi-card {
+            background: #111622;
+            border: 1px solid #1f293d;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .kpi-card h3 {
+            font-size: 12px;
+            color: #8a99ad;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+        }
+        .kpi-value {
+            font-size: 26px;
+            font-weight: bold;
+            color: #00bcd4;
+            margin: 0;
+        }
+
+        /* --- SECCIÓN DE PODIOS --- */
+        .podiums-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        .podium-wrapper {
+            text-align: center;
+            flex: 1;
+            min-width: 320px;
+            background: #111622;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #1f293d;
+        }
+        .podium-title { color: #fff; margin-bottom: 25px; font-size: 18px; }
+        .podium {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            height: 180px;
+            gap: 12px;
+            border-bottom: 4px solid #1f293d;
+        }
+
+        .podium-step { display: flex; flex-direction: column; align-items: center; width: 95px; }
+        .podium-name { font-size: 13px; font-weight: bold; color: #fff; margin-bottom: 8px; text-align: center; }
+        .step-block {
+            width: 100%; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; font-size: 22px; border-radius: 6px 6px 0 0;
+            position: relative; overflow: hidden;
+        }
+        
+        .step-1 .step-block { height: 120px; background: linear-gradient(135deg, #ffe066 0%, #f5b041 50%, #d4ac0d 100%); color: #4a3b00; box-shadow: 0 0 20px rgba(245, 176, 65, 0.4); border: 1px solid #f7dc6f;}
+        .step-2 .step-block { height: 85px; background: linear-gradient(135deg, #e5e8e8 0%, #bdc3c7 50%, #95a5a6 100%); color: #2c3e50; box-shadow: 0 0 15px rgba(189, 195, 199, 0.3); border: 1px solid #eaeded;}
+        .step-3 .step-block { height: 55px; background: linear-gradient(135deg, #edbb99 0%, #dc7633 50%, #a04000 100%); color: #fff; box-shadow: 0 0 15px rgba(220, 118, 51, 0.3); border: 1px solid #f5cba7;}
+
+        .step-block::after {
+            content: ''; position: absolute; top: -50%; left: -60%; width: 30%; height: 200%;
+            background: rgba(255, 255, 255, 0.3); transform: rotate(30deg); animation: shine 4s infinite linear;
+        }
+
+        @keyframes shine { 0% { left: -60%; } 15% { left: 130%; } 100% { left: 130%; } }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes pulseGlow { 0%, 100% { transform: scale(1); filter: brightness(1); } 50% { transform: scale(1.03); filter: brightness(1.15); } }
+
+        .animate-bounce { animation: bounce 2.5s infinite ease-in-out; }
+        .animate-up { animation: pulseGlow 3.5s infinite ease-in-out; }
+
+        /* --- TABLAS INFERIORES --- */
+        .general-lists-section { display: flex; gap: 20px; flex-wrap: wrap; }
+        .list-card { flex: 1; min-width: 300px; background: #111622; padding: 20px; border-radius: 8px; border: 1px solid #1f293d; }
+        .list-card h3 { color: #fff; margin-top: 0; font-size: 16px; border-bottom: 1px solid #1f293d; padding-bottom: 10px; }
+        .general-list { list-style: none; padding: 0; margin: 0; }
+        .general-list li { padding: 10px 0; border-bottom: 1px solid #1a2233; color: #cbd5e1; font-size: 14px; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    
+
+    <!-- CUERPO DE CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        
+        <!-- TOP BAR CON CRONÓMETRO -->
+        <header class="top-bar">
+            <div class="view-title">
+                <h1>🏆 Rendimiento de Operarios</h1>
+                <p>Métricas operativas en tiempo real</p>
+            </div>
+            <div class="time-counter">
+                <small>TIEMPO OPERATIVO</small>
+                <span id="global-timer">00:00:00</span>
+            </div>
+        </header>
+
+        <!-- CUADROS DE INDICADORES (KPIs) -->
+        <div class="kpi-container">
+            <div class="kpi-card">
+                <h3>Notas del Día</h3>
+                <p id="kpi-notas-dia" class="kpi-value">0</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Notas del Mes</h3>
+                <p id="kpi-notas-mes" class="kpi-value">0</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Ítems del Día</h3>
+                <p id="kpi-items-dia" class="kpi-value">0</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Ítems del Mes</h3>
+                <p id="kpi-items-mes" class="kpi-value">0</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Vol. del Día (Bultos)</h3>
+                <p id="kpi-vol-dia" class="kpi-value">0</p>
+            </div>
+            <div class="kpi-card">
+                <h3>Vol. Mes (Bultos)</h3>
+                <p id="kpi-vol-mes" class="kpi-value">0</p>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE LOS DOS PODIOS ANIMADOS -->
+        <div class="podiums-section">
+            <!-- Podio Separadores -->
+            <div class="podium-wrapper">
+                <h2 class="podium-title">📦 Top 3 Separadores</h2>
+                <div class="podium" id="podio-separadores">
+                    <div class="podium-step step-2 animate-up">
+                        <span class="podium-name" id="sep-p2">--</span>
+                        <div class="step-block">2</div>
+                    </div>
+                    <div class="podium-step step-1 animate-bounce">
+                        <span class="podium-name" id="sep-p1">--</span>
+                        <div class="step-block">1 👑</div>
+                    </div>
+                    <div class="podium-step step-3 animate-up">
+                        <span class="podium-name" id="sep-p3">--</span>
+                        <div class="step-block">3</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Podio Control Salida -->
+            <div class="podium-wrapper">
+                <h2 class="podium-title">🚚 Top 3 Salida</h2>
+                <div class="podium" id="podio-salida">
+                    <div class="podium-step step-2 animate-up">
+                        <span class="podium-name" id="sal-p2">--</span>
+                        <div class="step-block">2</div>
+                    </div>
+                    <div class="podium-step step-1 animate-bounce">
+                        <span class="podium-name" id="sal-p1">--</span>
+                        <div class="step-block">1 👑</div>
+                    </div>
+                    <div class="podium-step step-3 animate-up">
+                        <span class="podium-name" id="sal-p3">--</span>
+                        <div class="step-block">3</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TABLAS GENERALES CON LOS NOMBRES -->
+        <div class="general-lists-section">
+            <div class="list-card">
+                <h3>Tabla General - Separadores</h3>
+                <ul id="lista-general-separadores" class="general-list"></ul>
+            </div>
+            <div class="list-card">
+                <h3>Tabla General - Salida</h3>
+                <ul id="lista-general-salida" class="general-list"></ul>
+            </div>
+        </div>
+
+    </main>
+</div>
+<!-- SCRIPT DE CONTROL OPERATIVO Y CONEXIÓN EN ESPEJO -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // 1. CONTROL DEL CRONÓMETRO SUPERIOR EN TIEMPO REAL
+    function actualizarReloj() {
+        const ahora = new Date();
+        const hrs = ahora.getHours().toString().padStart(2, '0');
+        const mins = ahora.getMinutes().toString().padStart(2, '0');
+        const secs = ahora.getSeconds().toString().padStart(2, '0');
+        const campoReloj = document.getElementById('global-timer');
+        if (campoReloj) campoReloj.innerText = `${hrs}:${mins}:${secs}`;
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj(); // Ejecución instantánea inicial
+
+    // 2. PROCESADOR CENTRAL DE NOTAS Y MÉTRICAS
+    function procesarEstadisticasYRankings() {
+        if (!window.BaseDatosEspejo) return;
+        
+        // Obtener el lote global de remisiones desde tu archivo base-datos.js
+        const database = window.BaseDatosEspejo.obtenerNotas();
+        const hoy = new Date();
+        const hoyStr = hoy.toLocaleDateString();
+        const mesAnioActual = '/' + (hoy.getMonth() + 1).toString().padStart(2, '0') + '/' + hoy.getFullYear();
+
+        // Contadores para las tarjetas KPI
+        let notasDia = 0, notasMes = 0;
+        let itemsDia = 0, itemsMes = 0;
+        let volDia = 0, volMes = 0;
+
+        // Diccionarios para acumular la productividad de cada operario
+        const rankingSeparadores = {};
+        const rankingSalida = {};
+
+        database.forEach(nota => {
+            const esDelDia = (nota.fechaCarga === hoyStr);
+            const esDelMes = (nota.fechaCarga && nota.fechaCarga.includes(mesAnioActual));
+
+            // Detector inteligente de volumen (busca números seguidos de bultos/cajas)
+            let volumenNota = 1; 
+            if (nota.items) {
+                const matchVol = nota.items.match(/(\d+)\s*(bulto|caja|paquete|pack|unid)/i);
+                if (matchVol) volumenNota = parseInt(matchVol, 10);
+            }
+
+            // Sumatoria a indicadores globales
+            if (esDelDia) {
+                notasDia++;
+                volDia += volumenNota;
+                itemsDia += 1; 
+            }
+            if (esDelMes) {
+                notasMes++;
+                volMes += volumenNota;
+                itemsMes += 1;
+            }
+
+            // Clasificación por operario asignado en el depósito
+            const ops = nota.operadores || {};
+            if (ops.separador && ops.separador.trim() !== "") {
+                const sep = ops.separador.trim().toUpperCase();
+                rankingSeparadores[sep] = (rankingSeparadores[sep] || 0) + 1;
+            }
+            if (ops.salida && ops.salida.trim() !== "") {
+                const sal = ops.salida.trim().toUpperCase();
+                rankingSalida[sal] = (rankingSalida[sal] || 0) + 1;
+            }
+        });
+
+        // Inyectar resultados numéricos en los cuadros superiores
+        document.getElementById('kpi-notas-dia').innerText = notasDia;
+        document.getElementById('kpi-notas-mes').innerText = notasMes;
+        document.getElementById('kpi-items-dia').innerText = itemsDia;
+        document.getElementById('kpi-items-mes').innerText = itemsMes;
+        document.getElementById('kpi-vol-dia').innerText = volDia;
+        document.getElementById('kpi-vol-mes').innerText = volMes;
+
+        // Ordenar listas de operarios de mayor a menor rendimiento
+        const arrSeparadores = Object.entries(rankingSeparadores).sort((a, b) => b[1] - a[1]);
+        const arrSalida = Object.entries(rankingSalida).sort((a, b) => b[1] - a[1]);
+
+        // Actualizar posiciones físicas del Podio Animado
+        actualizarPodio('sep', arrSeparadores, 'pedidos');
+        actualizarPodio('sal', arrSalida, 'despachos');
+
+        // Actualizar las Tablas Generales inferiores
+        actualizarListaGeneral('lista-general-separadores', arrSeparadores, 'pedidos');
+        actualizarListaGeneral('lista-general-salida', arrSalida, 'despachos');
+    }
+
+    // 3. ENRUTADOR DE NOMBRES AL PODIO DE LUZ
+    function actualizarPodio(prefijo, arrayDatos, unidad) {
+        // Puesto 1 (Oro)
+        document.getElementById(`${prefijo}-p1`).innerHTML = (arrayDatos && arrayDatos[0]) 
+            ? `👑 <strong>${arrayDatos[0][0]}</strong><br><span style="color:#ffe066; font-size:11px;">${arrayDatos[0][1]} ${unidad}</span>` 
+            : '--';
+
+        // Puesto 2 (Plata)
+        document.getElementById(`${prefijo}-p2`).innerHTML = (arrayDatos && arrayDatos[1]) 
+            ? `🥈 <strong>${arrayDatos[1][0]}</strong><br><span style="color:#cbd5e1; font-size:11px;">${arrayDatos[1][1]} ${unidad}</span>` 
+            : '--';
+
+        // Puesto 3 (Bronce)
+        document.getElementById(`${prefijo}-p3`).innerHTML = (arrayDatos && arrayDatos[2]) 
+            ? `🥉 <strong>${arrayDatos[2][0]}</strong><br><span style="color:#edbb99; font-size:11px;">${arrayDatos[2][1]} ${unidad}</span>` 
+            : '--';
+    }
+
+    // 4. GENERADOR DE LISTADOS COMPLETOS
+    function actualizarListaGeneral(idElemento, arrayDatos, unidad) {
+        const lista = document.getElementById(idElemento);
+        if (!lista) return;
+        lista.innerHTML = "";
+
+        if (arrayDatos.length === 0) {
+            lista.innerHTML = `<li style="color: #6c757d; justify-content: center;">Sin actividad registrada hoy</li>`;
+            return;
+        }
+
+        arrayDatos.forEach(([nombre, total], index) => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span>${index + 1}. <strong>${nombre}</strong></span> <span>${total} ${unidad}</span>`;
+            lista.appendChild(li);
+        });
+    }
+
+    // Sincronización en Espejo: Recalcula al instante si se guarda una nota en otra ventana
+    window.addEventListener('storage', procesarEstadisticasYRankings);
+    
+    // Ejecución inicial de renderizado al cargar la pantalla
+    procesarEstadisticasYRankings();
+});
+</script>
+
+</body>
+</html>
