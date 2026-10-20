@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Depósito Jebai - Notas Entregadas</title>
+    <style>
+        /* BASE OSCURA COINCIDENTE CON EL FORMATO INDUSTRIAL EXTENDIDO */
+        html, body {
+            width: 100% !important;
+            height: 100vh !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            background-color: #070c16 !important;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            box-sizing: border-box;
+        }
+        .contenedor-completo { width: 100% !important; max-width: 96% !important; margin: 0 auto; }
+        .encabezado { border-bottom: 2px solid #1e293b; padding-bottom: 12px; margin-bottom: 20px; }
+        .titulo { font-size: 24px; font-weight: bold; color: #ffffff; margin: 0; }
+        .subtitulo { font-size: 13px; color: #00d2ff; margin: 4px 0 0 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* FILA SUPERIOR ADAPTATIVA CON LOS 7 CUADROS KPIs SIN DATOS IMAGINARIOS */
+        .grid-status-flujo-7 { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 25px; }
+        .tarjeta-status-kpi { background-color: rgba(19, 28, 46, 0.85); border: 1.5px solid #1e293b; border-radius: 10px; padding: 14px 10px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; justify-content: center; }
+        .kpi-numero { font-size: 26px; font-weight: 800; color: #ffffff; margin-bottom: 4px; font-family: monospace; }
+        .kpi-numero.blue { color: #3b82f6; } .kpi-numero.amarillo { color: #f59e0b; } .kpi-numero.cyan { color: #00d2ff; } .kpi-numero.verde { color: #10b981; }
+        .kpi-texto { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.3; }
+
+        /* BARRA INDUSTRIAL DE BÚSQUEDA */
+        .barra-filtros-archivo { display: flex; gap: 15px; margin-bottom: 20px; background-color: rgba(15, 23, 42, 0.6); padding: 12px; border-radius: 8px; border: 1px solid #1e293b; }
+        .input-buscar-erp { flex: 1; background-color: #070c16; border: 1px solid #334155; border-radius: 6px; padding: 10px 14px; color: #ffffff; font-size: 14px; }
+        .input-buscar-erp:focus { border-color: #00d2ff; outline: none; }
+
+        /* TABLAS DE DEPARTAMENTOS LOGÍSTICOS */
+        .seccion-grupo-dpto { margin-bottom: 25px; }
+        .cabecera-grupo-dpto { background-color: #0f172a; color: #00d2ff; font-size: 13px; font-weight: 800; padding: 10px 16px; border-radius: 8px 8px 0 0; border: 2px solid #1e293b; border-bottom: none; text-transform: uppercase; }
+        .cuadro-tabla { background-color: rgba(19, 28, 46, 0.9); border: 2px solid #1e293b; border-radius: 0 0 12px 12px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.4); }
+        .tabla-logistica { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+        .tabla-logistica th { background-color: #16223f; color: #94a3b8; text-transform: uppercase; font-size: 11px; font-weight: 700; padding: 12px 16px; border-bottom: 1px solid #334155; }
+        .tabla-logistica td { padding: 12px 16px; border-bottom: 1px solid #1e293b; color: #cbd5e1; }
+        .tabla-logistica tr:hover { background-color: rgba(30, 41, 59, 0.5); }
+        
+        .badge-nota { font-family: monospace; font-weight: bold; color: #ffffff; background-color: #1e293b; padding: 4px 8px; border-radius: 4px; }
+        .badge-vol { background-color: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-family: monospace; }
+        .hora-marca { font-family: monospace; color: #cbd5e1; font-weight: 600; }
+        .estado-vacio { text-align: center; color: #64748b; padding: 30px !important; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <div class="contenedor-completo">
+        <!-- CABECERA ERP JEBAI -->
+        <div class="encabezado">
+            <h1 class="titulo">Módulo Depósito Jebai</h1>
+            <p class="subtitulo">Filtro exclusivo para departamentos operativos locales: 7, 8, 21, 22, 23 y 25</p>
+        </div>
+
+        <!-- REJILLA DE LOS 7 CUADROS DE CONTROL DE FLUJO SIN DATOS IMAGINARIOS -->
+        <div class="grid-status-flujo-7">
+            <div class="tarjeta-status-kpi"><div class="kpi-numero blue" id="kpiTotalDia">0</div><div class="kpi-texto">Total Notas del Día</div></div>
+            <div class="tarjeta-status-kpi"><div class="kpi-numero" id="kpiEnSeparacion">0</div><div class="kpi-texto">En Separación</div></div>
+            <div class="tarjeta-status-kpi"><div class="kpi-numero amarillo" id="kpiPendienteSeparar">0</div><div class="kpi-texto">Pendiente a Separar</div></div>
+            <div class="tarjeta-status-kpi"><div class="kpi-numero" id="kpiEnSalida">0</div><div class="kpi-texto">En Salida</div></div>
+            <div class="tarjeta-status-kpi"><div class="kpi-numero amarillo" id="kpiPendienteSalida">0</div><div class="kpi-texto">Pendiente en Salida</div></div>
+            <div class="tarjeta-status-kpi"><div class="kpi-numero cyan" id="kpiEnEntrega">0</div><div class="kpi-texto">En Entrega</div></div>
+            <div class="tarjeta-status-kpi"><div class="kpi-numero verde" id="kpiPendienteEntregaEntregadas">0</div><div class="kpi-texto">Pendiente en Entrega y Entregadas</div></div>
+        </div>
+
+        <!-- BUSCADOR LOGÍSTICO -->
+        <div class="barra-filtros-archivo">
+            <input type="text" id="txtBuscarNota" class="input-buscar-erp" placeholder="🔍 Buscar por Nro Nota o nombre de cliente en Jebai..." oninput="cargarYFiltrarJebaiLocal()">
+        </div>
+
+        <div style="margin: 25px 0 15px 0;"><h2 style="color: #ffffff; font-size: 16px; font-weight: 700; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">📋 Registro de Notas Finalizadas - Jebai</h2></div>
+        
+        <!-- CONTENEDOR DE TABLAS FLUIDAS -->
+        <div id="contenedorGruposDepartamentos"></div>
+    </div>
+
+    <script>
+        const dptosJebaiValidos = ["7", "8", "21", "22", "23", "25"];
+
+        function cargarYFiltrarJebaiLocal() {
+            // Lee la memoria unificada de la computadora
+            const claveMemoria = "sistema_remisiones_local";
+            const crudos = localStorage.getItem(claveMemoria);
+            const listadoNotas = crudos ? JSON.parse(crudos) : [];
+
+            // RECALCULAR LOS KPIs SUPERIORES SOBRE LA DATA LOCAL REAL
+            document.getElementById("kpiTotalDia").innerText = listadoNotas.length;
+            document.getElementById("kpiEnSeparacion").innerText = listadoNotas.filter(n => n.estado === "En Separación").length;
+            document.getElementById("kpiPendienteSeparar").innerText = listadoNotas.filter(n => n.estado === "Pendiente a Separar" || n.estado === "Pendiente").length;
+            document.getElementById("kpiEnSalida").innerText = listadoNotas.filter(n => n.estado === "En Salida").length;
+            document.getElementById("kpiPendienteSalida").innerText = listadoNotas.filter(n => n.estado === "Pendiente en Salida").length;
+            document.getElementById("kpiEnEntrega").innerText = listadoNotas.filter(n => n.estado === "En Entrega").length;
+            document.getElementById("kpiPendienteEntregaEntregadas").innerText = listadoNotas.filter(n => n.estado === "Entregada" || n.estado === "Pendiente en Entrega y Entregadas").length;
+
+            const filtroTexto = document.getElementById("txtBuscarNota").value.trim().toLowerCase();
+            const contenedor = document.getElementById("contenedorGruposDepartamentos");
+            contenedor.innerHTML = "";
+
+            // Solo entran notas entregadas de los sectores de Jebai
+            let notasFiltradas = listadoNotas.filter(n => n.estado === "Entregada" && dptosJebaiValidos.includes(String(n.departamento || n.dpto)));
+
+            if (filtroTexto !== "") {
+                notasFiltradas = notasFiltradas.filter(n => 
+                    String(n.id_nota || n.nroNota).toLowerCase().includes(filtroTexto) || 
+                    String(n.propietario_pedido || n.pedido).toLowerCase().includes(filtroTexto)
+                );
+            }
+
+            if (notasFiltradas.length === 0) {
+                contenedor.innerHTML = `<div class="cuadro-tabla" style="border-radius:12px;"><table class="tabla-logistica"><tr><td class="estado-vacio">⚠️ No hay registros de notas entregadas para los dptos de Jebai en esta computadora.</td></tr></table></div>`;
+                return;
+            }
+
+            const grupos = {};
+            notasFiltradas.forEach(nota => {
+                const dptoNombre = nota.departamento || nota.dpto || "Sin Especificar";
+                if (!grupos[dptoNombre]) grupos[dptoNombre] = [];
+                grupos[dptoNombre].push(nota);
+            });
+
+            Object.keys(grupos).forEach(dptoKey => {
+                let listaGrupo = grupos[dptoKey];
+                
+                // REGLA: Las fechas más actuales se inyectan arriba del todo
+                listaGrupo.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
+
+                let bloqueHTML = `
+                    <div class="seccion-grupo-dpto">
+                        <div class="cabecera-grupo-dpto">📍 Notas del Departamento ${dptoKey}</div>
+                        <div class="cuadro-tabla" style="overflow-x: auto;">
+                            <table class="tabla-logistica">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Nro Nota</th>
+                                        <th>Pedido de (Cliente)</th>
+                                        <th>Separador</th>
+                                        <th>Inicio / Término Sep</th>
+                                        <th>Hora Salida</th>
+                                        <th>Compañero (Salida)</th>
+                                        <th>Inicio / Término Salida</th>
+                                        <th>Volumen (VOL)</th>
+                                        <th>Entregador</th>
+                                        <th>Inicio / Término Entrega</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+
+                listaGrupo.forEach(n => {
+                    let fechaVisual = "---";
+                    if (n.fecha) {
+                        const partes = n.fecha.split("-");
+                        fechaVisual = partes.length === 3 ? `${partes}/${partes}/${partes}` : n.fecha;
+                    }
+                    let numeroNotaFormateado = (n.id_nota || n.nroNota || "---").replace("OP-", "");
+
+                    bloqueHTML += `
+                        <tr>
+                            <td style="white-space: nowrap; color: #94a3b8; font-weight: 500;">${fechaVisual}</td>
+                            <td><span class="badge-nota">${numeroNotaFormateado}</span></td>
+                            <td style="font-weight: 700; color: #ffffff; white-space: nowrap;">${n.propietario_pedido || n.pedido || "---"}</td>
+                            <td style="white-space: nowrap;">${n.separador || "---"}</td>
+                            <td class="hora-marca" style="white-space: nowrap;">
+                                <span style="color: #64748b;">I:</span> ${n.hora_inicio || "---"}<br>
+                                <span style="color: #38bdf8;">T:</span> ${n.hora_fin || "---"}
+                            </td>
+                            <td class="hora-marca" style="color: #f59e0b;">${n.hora_registro || n.horaSalida || "---"} hs</td>
+                            <td style="white-space: nowrap;">${n.operador_salida || n.companero_salida || "---"}</td>
+                            <td class="hora-marca" style="white-space: nowrap;">
+                                <span style="color: #64748b;">I:</span> ${n.hora_inicio_salida || "---"}<br>
+                                <span style="color: #38bdf8;">T:</span> ${n.hora_fin_salida || "---"}
+                            </td>
+                            <td><span class="badge-vol">${n.cantidad || n.vol || "0"} VOL</span></td>
+                            <td style="white-space: nowrap; color: #00d2ff; font-weight: 600;">${n.entregador || "---"}</td>
+                            <td class="hora-marca" style="white-space: nowrap;">
+                                <span style="color: #64748b;">I:</span> ${n.hora_inicio_entrega || "---"}<br>
+                                <span style="color: #10b981;">T:</span> ${n.hora_fin_entrega || "---"}
+                            </td>
+                        </tr>`;
+                });
+
+                bloqueHTML += `</tbody></table></div></div>`;
+                contenedor.innerHTML += bloqueHTML;
+            });
+        }
+
+        window.onload = cargarYFiltrarJebaiLocal;
+        window.addEventListener('storage', cargarYFiltrarJebaiLocal);
+    </script>
+</body>
+</html>
